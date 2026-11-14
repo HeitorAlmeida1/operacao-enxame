@@ -261,6 +261,10 @@ function draw(){
     ctx.beginPath();ctx.moveTo(pd.x-13,pd.y-4);ctx.lineTo(pd.x+13,pd.y-4);ctx.moveTo(pd.x-13,pd.y+5);ctx.lineTo(pd.x+13,pd.y+5);ctx.stroke();
     ctx.beginPath();ctx.moveTo(pd.x-13,pd.y-13);ctx.lineTo(pd.x+13,pd.y+13);ctx.stroke() }
   for(const h of G.hazards){glowDot(h.x,h.y,h.r,'#5a1fb0',h.arm>0?0.15:0.35);ring(h.x,h.y,h.r*(h.arm>0?1-h.arm/0.8:1),'#b06bff',2);if(h.arm<=0)for(let k=0;k<3;k++)glowDot(h.x+Math.cos(t*2+k*2)*h.r*0.5,h.y+Math.sin(t*2+k*2)*h.r*0.5,4,'#d9b3ff',0.6)}
+  if(G.quest&&G.quest.kind==='zona'){const q=G.quest,dentro=d2(P,q)<q.r*q.r;
+    ctx.setLineDash([14,10]);ctx.lineDashOffset=-t*30;
+    ring(q.x,q.y,q.r,dentro?'#b79aff':'#8e6bb0',4);ctx.setLineDash([]);
+    ctx.globalAlpha=dentro?0.18:0.1;circle(q.x,q.y,q.r,'#8e6bb0');ctx.globalAlpha=1}
   if(G.trial){ctx.setLineDash([12,8]);ring(G.trial.x,G.trial.y,G.trial.r,'#ff5d6c',3);ctx.setLineDash([]);glowDot(G.trial.x,G.trial.y,G.trial.r,'#ff5d6c',0.05)}
   for(const s of G.spires){const c={boon:'#ffcc4d',quest:'#9b7bff',trial:'#ff5d6c'}[s.type];ctx.setLineDash([6,6]);ring(s.x,s.y,70,c,2);ctx.setLineDash([]);
     shadow(s.x,s.y+14,16,5);glowDot(s.x,s.y-6,26,c,0.15+0.1*Math.sin(t*5));poly([s.x,s.y-30,s.x+13,s.y+12,s.x-13,s.y+12],c);poly([s.x,s.y-22,s.x+6,s.y+6,s.x-6,s.y+6],'#ffffff');

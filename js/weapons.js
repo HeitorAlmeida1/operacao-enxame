@@ -25,8 +25,10 @@ const WEAPONS={
       const n=coneHit(a,R,sp,10+3*w.lvl+0.05*ST.maxHp,e=>push(e,P.x,P.y,90));if(w.evo&&n)P.hp=Math.min(ST.maxHp,P.hp+Math.min(n,8)*0.003*ST.maxHp)}},
   tempestade:{n:'Tempestade de Aço',evoN:'Tempestades Errantes',evo:'crit',sig:'kaze',c:'#bfe8ff',
     d:'Junta Fluxo andando; com 100 de Fluxo solta um redemoinho em linha.',up:'Redemoinho maior e mais forte',ed:'Solta três redemoinhos de uma vez.',
-    tick(w,dt){const s=w.st;s.flow=(s.flow||0)+(28+(P.moving?40:0))*dt/cdMul;if(s.flow<100)return;s.flow=0;const a=aim(),n=w.evo?3:1;
-      for(let i=0;i<n;i++)shoot(a+(n>1?(i-1)*0.4:0),520,{r:(20+2*w.lvl)*ST.area,dmg:24+8*w.lvl,life:0.75,pierce:999,whirl:true,c:'#bfe8ff',onHit:(p,e)=>{if(!e.boss)e.frozenT=Math.max(e.frozenT,0.35)}})}},
+    tick(w,dt){const s=w.st;s.flow=(s.flow||0)+(28+(P.moving?40:0))*dt/cdMul;if(s.flow<100)return;s.flow=0;
+      const a=aim(),n=(w.evo?3:1)+ST.proj;                 // Projéteis = mais redemoinhos
+      const rr=(20+2*w.lvl)*ST.area*(1+ST.crit*0.5);       // Crítico, o status do Kaze, engrossa o funil
+      for(let i=0;i<n;i++)shoot(a+(n>1?(i-(n-1)/2)*0.34:0),520,{r:rr,dmg:24+8*w.lvl,life:0.75*ST.dur,pierce:999,whirl:true,c:'#bfe8ff',onHit:(p,e)=>{if(!e.boss)e.frozenT=Math.max(e.frozenT,0.35)}})}},
   feitico:{n:'Feitiço Guia',evoN:'Feitiço Saltitante',evo:'exp',sig:'lebre',proj:true,c:'#b8a4ff',
     d:'Raios teleguiados que marcam os inimigos; a 3ª marca causa dano dobrado.',up:'+raios e mais dano',ed:'A 3ª marca também explode em área.',
     cd:()=>0.8,fire(w,j){const n=1+Math.floor(w.lvl/2)+ST.proj,dm=10+4*w.lvl;const list=G.enemies.filter(e=>!e.dead&&d2(e,P)<600*600).sort((a,b)=>d2(a,P)-d2(b,P)).slice(0,n);

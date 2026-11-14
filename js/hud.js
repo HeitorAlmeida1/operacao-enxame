@@ -1,5 +1,8 @@
 /* ---------- Fim ---------- */
-function bankGold(){if(G.banked)return;G.banked=true;SAVE.gold+=Math.round(G.gold);addTot('kills',G.kills);save()}
+function bankGold(){if(G.banked)return;G.banked=true;
+  // Avarento troca o ouro guardado pelo dobro durante a partida
+  if(!P.aug.avarento)SAVE.gold+=Math.round(G.gold);
+  addTot('kills',G.kills);save()}
 function endScreen(win){G.state='over';$('tip').hidden=true;recordRun(win);sfx(win?'win':'lose');['top','left','right','abil','xp','aimMode'].forEach(i=>$(i).hidden=true);
   if(win){complete({distrito:'win1',periferia:'win2',lab:'win3',praia:'win4'}[G.map]);if(G.diff!=='normal')complete('hard');if(G.diff!=='normal'&&G.map==='praia')complete('hard4');if(G.diff==='extremo')complete('extremo');if(G.map==='distrito'&&G.diff!=='normal')complete('win1h');if(G.rage)complete('furia');if(!SAVE.winsF[P.fid]){SAVE.winsF[P.fid]=1;SAVE.tot.winsF=Object.keys(SAVE.winsF).length;if(SAVE.tot.winsF>=9)complete('todos');save()}}
   bankGold();
@@ -21,7 +24,13 @@ function hud(){
   $('timer').textContent=fmt(G.t);
   if(!G.bossSpawned)$('bossNote').textContent=MAPS[G.map].boss+' em '+fmt(BOSS_T-G.t);
   else if(G.boss){$('bossBar').firstElementChild.style.width=Math.max(0,G.boss.hp/G.boss.max*100)+'%';if(G.boss.p2)$('bossNote').textContent=MAPS[G.map].boss+' · 2ª fase'}
-  const qt=G.quest?'Missão: '+G.quest.got+'/'+G.quest.need+' · '+Math.ceil(G.quest.t)+' s':G.trial?'Provação: fique no círculo · '+Math.ceil(G.trial.t)+' s':'';
+  let qt='';
+  if(G.quest){const q=G.quest;
+    const prog = q.kind==='zona' ? Math.floor(q.zt)+'/14 s dentro'
+               : q.kind==='limpo' ? 'sem apanhar'
+               : q.got+'/'+q.need;
+    qt='Missão: '+prog+' · '+Math.ceil(q.t)+' s'}
+  else if(G.trial)qt='Provação: fique no círculo · '+Math.ceil(G.trial.t)+' s';
   $('quest').hidden=!qt;$('quest').textContent=qt;
   $('lvl').textContent='Nível '+P.lvl;$('hpTxt').textContent=Math.ceil(P.hp)+'/'+ST.maxHp;
   if(!G.faceSet){G.faceSet=true;$('pFace').src=iconURL('f:'+P.fid);$('fname').textContent=P.f.n+' · '+P.f.t;

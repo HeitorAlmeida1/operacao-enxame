@@ -350,6 +350,36 @@ function drawEnemy(e, t){
       ctx.quadraticCurveTo(x+sd*r*0.9, y+r*0.6, x+sd*r*0.5, y+r*1.0); ctx.stroke(); }
     tBlob(x, y, r*0.9, r*0.84, c, W_);
   }
+  else if(ty === 'morteiro'){                // fica longe e lança por cima: tubo nas costas
+    tBlob(x, y, r*0.9, r*0.82, c, W_);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(a - Math.PI/2);
+    ctx.beginPath(); roundRect(-r*0.22, -r*1.5, r*0.44, r*1.1, r*0.16);
+    inked(shade(c,-0.3), W_*0.8);
+    ctx.beginPath(); ctx.ellipse(0, -r*1.45, r*0.22, r*0.1, 0, 0, TAU);
+    ctx.fillStyle = INK; ctx.fill();
+    ctx.restore();
+    // três perninhas de tripé
+    ctx.strokeStyle = INK; ctx.lineWidth = W_*1.3; ctx.lineCap='round';
+    for(const sd of [-1,0,1]){ ctx.beginPath();
+      ctx.moveTo(x+sd*r*0.3, y+r*0.4); ctx.lineTo(x+sd*r*0.6, y+r*0.95); ctx.stroke(); }
+  }
+  else if(ty === 'escudeiro'){               // o escudo gira devagar: contorne para machucar
+    tBlob(x, y, r*0.86, r*0.8, c, W_);
+    const fa = e.face === undefined ? a : e.face;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(fa);
+    ctx.beginPath();
+    ctx.arc(r*0.5, 0, r*0.95, -1.15, 1.15);
+    ctx.lineTo(r*0.34, 0); ctx.closePath();
+    inked(T.woodL, W_*1.1);
+    ctx.beginPath(); ctx.arc(r*0.56, 0, r*0.34, -1.0, 1.0);
+    ctx.strokeStyle = INK; ctx.lineWidth = W_*0.7; ctx.stroke();
+    ctx.restore();
+  }
+  else if(ty === 'enxameador'){              // caroços por fora: vai rachar em três
+    tBlob(x, y, r*0.9, r*0.84, c, W_);
+    for(let k=0;k<3;k++){ const an = k*TAU/3 + t*0.6;
+      tBlob(x + Math.cos(an)*r*0.62, y + Math.sin(an)*r*0.62, r*0.3, r*0.28, shade(c,-0.22), W_*0.7, true); }
+  }
   else if(ty === 'chefe'){                   // mini-chefe: coroa de espinhos
     for(let k=0;k<10;k++){ const an=k*TAU/10 + t*0.4;
       tPoly([x+Math.cos(an-0.16)*r*0.9, y+Math.sin(an-0.16)*r*0.9,

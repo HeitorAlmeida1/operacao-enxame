@@ -46,9 +46,10 @@ O código ficava num `index.html` único; em 2026-11-13 foi separado em arquivos
   Como no Swarm, **só três vêm de fábrica** (Dano, Vida Máxima, Armadura); as outras nove são destravadas por objetivo — o campo `lock` em `PASSIVES` aponta o objetivo, e `pasUnlocked(id)` responde se já saiu.
   Os espaços começam em **3** e vão até **6** comprando a melhoria `slot`. O nível máximo é **99** (`LVL_MAX`).
 - **4 mapas**: Distrito Industrial (Fonte de Cura, Rainha do Vazio), Periferia (Canhão de Íons, Colosso Primordial), Laboratório Subterrâneo (Bombas de Gelo, Devoradora do Vazio), Cabeça de Praia (maré subindo, Senhor da Maré com 2 fases). Cada chefe tem 3 mecânicas de ataque e uma tela de entrada.
-- **Inimigos**: mini, brute, runner, spitter, sombra, bomba, blindado, saltador, elites (dourados) e mini-chefes.
+- **Inimigos**: mini, brute, runner, spitter, sombra, bomba, blindado, saltador, morteiro, escudeiro, enxameador, elites (dourados) e mini-chefes.
 - **3 dificuldades** (História / Difícil / Extremo), chefe aos 15:00 e fúria aos 20:00. Cada uma tem `hp`, `dmg` (ataque e contato), `sp` (habilidade de chefe e mecânica de mapa) e `gold`. Como no Swarm, `dmg` sobe mais rápido que `sp`.
-- Torres de bênção, missão e provação; **17 aprimoramentos**; Comandante NPC; caixas.
+- Torres de bênção, missão e provação; **30 aprimoramentos**; Comandante NPC; caixas.
+- A torre de missão sorteia entre **quatro variantes** (derrote N, colete N cristais, sobreviva sem apanhar, fique no círculo que passeia pelo mapa). Todas usam `got`/`need`/`t`, então o HUD e a conclusão valem para qualquer uma — quem criar a quinta só precisa seguir esse contrato.
 - Ouro, **15 melhorias permanentes** (inclui Poder Anima), **33 objetivos** que desbloqueiam conteúdo, tela de recordes.
 - Som e música gerados com Web Audio; tutorial na primeira partida; teclas configuráveis; suporte a gamepad; minimapa; números de dano; placar de dano por arma no fim da partida.
 - Progresso salvo em `localStorage` na chave **`operacaoEnxame.v2`** (não mude a chave sem migrar os dados).
@@ -104,6 +105,19 @@ Vetor chapado desenhado à mão, com **contorno escuro grosso** em tudo. Nada de
 - **Interface**: placas de pergaminho com borda escura de 3 px e sombra sólida embaixo (`0 4px 0 var(--wood-d)`), como madeira empilhada. Títulos usam contorno via `-webkit-text-stroke` + `paint-order:stroke fill`.
 - **Fontes**: Baloo 2 (display, arredondada) e Nunito (corpo). O texto desenhado no canvas usa as mesmas.
 - O brilho aditivo (`light()`) ficou em 30% da intensidade antiga: ele servia ao visual neon e agora só suja.
+
+### Como os status entram nas armas e habilidades
+
+Esta é a espinha do Swarm e foi corrigida depois de o dono notar que a arma do Kaze não ganhava redemoinhos com Projéteis. A política é:
+
+| Status | O que ele muda |
+| --- | --- |
+| **Projéteis** (`ST.proj`) | **Quantidade**: redemoinhos, foguetes, penas, raios, anéis, tentáculos, comprimento da muralha |
+| **Duração** (`ST.dur`) | **Tempo**: escudos, buffs, invulnerabilidade, invocações, muros, zonas |
+| **Área** (`ST.area`) | **Tamanho**: raios de explosão, alcance de investida, largura de feixe |
+| **Crítico** (`ST.crit`) | Já entra em todo dano por `damage()`; na arma do Kaze engrossa o funil também |
+
+Ao criar arma ou habilidade nova, **passe por pelo menos um desses três**. Antes só `ST.area` era usado, e em quase tudo — o efeito prático é que metade das passivas não mexia na arma exclusiva nem no E/R, e a build deixava de ter identidade.
 
 ### Escala de importância
 
@@ -303,7 +317,7 @@ O mundo **não é mais infinito**. Cada mapa tem `rad` em `MAPS` (meia-largura d
 
 1. ~~Portão das passivas por objetivo, 3 espaços iniciais e teto de nível 99.~~ **Feito.**
 2. ~~Sensação de combate: hit-stop, tremor em camadas e a escala de importância da ultimate.~~ **Feito** — ver "Escala de importância" acima.
-3. Conteúdo: mais aprimoramentos (temos 17, o Swarm passa de 30, sempre com vantagem **e** desvantagem no mesmo cartão), variantes de missão para a torre roxa (hoje é sempre "colete N"), e três inimigos novos — morteiro que mira onde você vai estar, escudeiro que só morre pelo flanco, e enxameador que racha em três ao morrer.
+3. ~~Conteúdo: aprimoramentos, variantes de missão e três inimigos novos.~~ **Feito.** Junto saiu o escalonamento de Projéteis/Duração/Área nas armas exclusivas e nas 18 habilidades — ver "Como os status entram nas armas e habilidades".
 4. Progressão visível: brilho do Poder Anima **no mundo** ao chegar a 100 (hoje só existe a etiqueta no HUD), contador de maestria por lutador na tela de seleção, e a provação vermelha soltando Cartões de Acesso em vez de só ouro.
 - Ideia em estudo: versão 3D com Three.js, mantendo a lógica atual e trocando só o desenho (estilo low-poly).
 - **Estilo denso do código**: o JS foi escrito com várias instruções por linha (linhas de até 445 caracteres). A separação em arquivos melhorou a navegação, mas não isso. Ideia: ao mexer num arquivo, desdobrar as linhas mais densas dele — em commits separados dos de funcionalidade.

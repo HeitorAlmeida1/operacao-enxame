@@ -113,6 +113,12 @@ const TYPES={
   blindado:{r:20,hp:110,spd:40,dmg:18,c:'#9d9a8e',xp:4,tough:0.5},
   saltador:{r:12,hp:34,spd:62,dmg:12,c:'#5aa88a',xp:2,leap:true},
   chefe:{r:34,hp:230,spd:46,dmg:26,c:'#c05a8e',xp:25},
+  /* morteiro: fica longe e mira onde você VAI estar, não onde está */
+  morteiro:{r:14,hp:34,spd:46,dmg:14,c:'#b06a9c',xp:3,mortar:true},
+  /* escudeiro: o escudo gira devagar, então só morre pelo flanco */
+  escudeiro:{r:17,hp:70,spd:52,dmg:15,c:'#6f8bb0',xp:4,guard:true},
+  /* enxameador: ao morrer racha em três menores */
+  enxameador:{r:16,hp:46,spd:66,dmg:12,c:'#c9a24a',xp:3,split:1},
 };
 const AUGS={
   vidro:{n:'Canhão de Vidro',d:'+40% de dano, mas −40% de vida máxima.'},
@@ -132,6 +138,19 @@ const AUGS={
   festa:{n:'Celebração',d:'Por 8 s depois de subir de nível: +25% de dano, +30% de velocidade e +40 de aceleração.'},
   pets:{n:'Pet de Apoio',d:'Suas invocações (drone, robô, trem) causam 50% a mais de dano.'},
   ima:{n:'Ímã Preguiçoso',d:'−80% de raio de coleta, mas a cada 45 s puxa tudo do mapa.'},
+  ferreiro:{n:'Juramento do Ferreiro',d:'+8% de dano por arma no nível 5, mas você não pega mais armas novas.'},
+  coracao:{n:'Coração Partido',d:'−45% de vida máxima, mas +1 espaço de passiva.'},
+  passo:{n:'Passo Longo',d:'+40% de velocidade, mas parado você perde vida aos poucos.'},
+  avarento:{n:'Avarento',d:'O ouro vale o dobro durante a partida, mas não é guardado no fim.'},
+  crescente:{n:'Escala Crescente',d:'+1,2% de dano por minuto de partida. Sem teto.'},
+  mira:{n:'Mira Travada',d:'Com mira no mouse: +35% de dano. Com mira automática: −15%.'},
+  ultima:{n:'Última Chance',d:'Ao morrer, revive uma vez com 35% da vida.'},
+  sangue:{n:'Pacto de Sangue',d:'+55% de dano, mas você não regenera vida.'},
+  casco:{n:'Casco Duro',d:'+30 de armadura, mas −25% de área.'},
+  enxame:{n:'Chamado do Enxame',d:'+2 projéteis, mas nascem 25% mais inimigos.'},
+  banquete:{n:'Banquete',d:'Cura 4% da vida ao matar elite ou chefe, mas −20% de vida máxima.'},
+  relampago:{n:'Reflexo Relâmpago',d:'+45 de aceleração enquanto estiver acima de 80% de vida.'},
+  duelista:{n:'Duelista',d:'+45% de dano em chefes e mini-chefes, mas −15% no resto.'},
 };
 const BOONS=[
   {n:'Supercarro',d:'Invulnerável por 6 s',f(){P.invuln=Math.max(P.invuln,6)}},

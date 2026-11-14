@@ -309,6 +309,7 @@ function drawMinimap(){
     ctx.beginPath(); ctx.arc(wx(s), wy(s), 7 + Math.sin(G.t*4)*1.6, 0, TAU); ctx.stroke();
     ctx.globalAlpha = 1;
   }
+  if(G.quest && G.quest.kind==='zona') dot(G.quest, 4.5, T.purple);
   for(const c of G.cards) dot(c, 3, T.yellow);
   for(const e of G.enemies){
     if(e.boss) dot(e, 6, T.red);
