@@ -24,7 +24,7 @@ let optReturn='start';
 function openOptions(from){optReturn=from;$(from).hidden=true;renderOptions();$('options').hidden=false}
 function renderOptions(){
   for(const [id,k] of [['volSfx','sfx'],['volMus','music']]){const el=$(id);el.value=Math.round(SAVE.set[k]*100);el.oninput=()=>{SAVE.set[k]=el.value/100;applyVol();save();if(k==='sfx')sfx('ui')}}
-  for(const [id,k,t] of [['optNums','nums','Números de dano'],['optShake','shake','Tremor de tela']]){const b=$(id);b.textContent=t+': '+(SAVE.set[k]?'ligado':'desligado');b.setAttribute('aria-pressed',SAVE.set[k]?'true':'false');b.onclick=()=>{SAVE.set[k]=!SAVE.set[k];save();renderOptions()}}
+  for(const [id,k,t] of [['optNums','nums','Números de dano'],['optShake','shake','Tremor de tela'],['optJuice','juice','Impacto no golpe']]){const b=$(id);b.textContent=t+': '+(SAVE.set[k]?'ligado':'desligado');b.setAttribute('aria-pressed',SAVE.set[k]?'true':'false');b.onclick=()=>{SAVE.set[k]=!SAVE.set[k];save();renderOptions()}}
   const l=$('keyList');l.innerHTML='';for(const a in ACTIONS){const row=document.createElement('div');row.className='row';row.innerHTML='<div class="grow"><span class="t1"></span></div><button class="btn"></button>';
     row.querySelector('.t1').textContent=ACTIONS[a];const b=row.querySelector('button');b.textContent=rebinding===a?'Aperte uma tecla…':keyName(SAVE.keys[a]);b.onclick=()=>{rebinding=a;renderOptions()};l.appendChild(row)}
   $('padNote').textContent=PAD.on?'Controle conectado: analógico esquerdo anda, direito mira, A/LT = E, B/RT = R, Start pausa.':'Controle (gamepad): conecte e aperte qualquer botão. Analógico esquerdo anda, direito mira, A/LT = E, B/RT = R, Start pausa.'}

@@ -1,7 +1,12 @@
 /* ---------- Loop e entrada ---------- */
 let last=performance.now();
 function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;pollPad();
-  if(G&&G.state==='play'&&!paused){update(dt);G.hudT-=dt;if(G.hudT<=0){G.hudT=0.08;hud()}}
+  if(G&&G.state==='play'&&!paused){
+    // hit-stop: segura a simulação por um instante, mas segue desenhando
+    if((G.stop||0)>0){ G.stop-=dt; updateWaves(dt); }
+    else { update(dt);G.hudT-=dt;if(G.hudT<=0){G.hudT=0.08;hud()} }
+    G.stopCd=Math.max(0,(G.stopCd||0)-dt);
+  }
   else if(G&&G.state==='choice')choiceTick(dt);
   draw();requestAnimationFrame(frame)}
 requestAnimationFrame(frame);

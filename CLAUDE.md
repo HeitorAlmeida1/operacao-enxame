@@ -76,6 +76,9 @@ js/world.js         limites da arena, cenário em escala de mapa (macroPaint), p
 js/toon.js          o estilo de desenho: paleta T, tinta INK e as primitivas tBlob/tPoly/
                     tEye/tShadow/tTile/inked. REDEFINE drawFighter, drawEnemy, drawBoss
                     e paintChunk — por carregar depois do draw.js, as versões daqui valem
+js/juice.js         sensação de impacto: SHAKE/shakeTier (tremor em camadas), hitStop/
+                    hitStopRaro, ondas de choque (addWave/updateWaves/drawWaves) e as
+                    apresentações abilityBurst / ultBurst / deathBurst
 js/audio.js         AU, audioInit, sfx(), musicTick() + o setInterval da música
 js/input.js         ACTIONS, DEFKEYS, teclas e gamepad (pollPad)
 js/screens.js       tutorial (tip/tutUpdate), recordes (recordRun/renderRec), opções
@@ -101,6 +104,24 @@ Vetor chapado desenhado à mão, com **contorno escuro grosso** em tudo. Nada de
 - **Interface**: placas de pergaminho com borda escura de 3 px e sombra sólida embaixo (`0 4px 0 var(--wood-d)`), como madeira empilhada. Títulos usam contorno via `-webkit-text-stroke` + `paint-order:stroke fill`.
 - **Fontes**: Baloo 2 (display, arredondada) e Nunito (corpo). O texto desenhado no canvas usa as mesmas.
 - O brilho aditivo (`light()`) ficou em 30% da intensidade antiga: ele servia ao visual neon e agora só suja.
+
+### Escala de importância
+
+O guia de VFX da Riot manda o efeito crescer junto com o que está em jogo. A escada do nosso está em `js/juice.js` e vale a pena manter monotônica — se um degrau novo entrar no meio, recalibre os vizinhos:
+
+| Degrau | Tremor | Congela | Clarão |
+| --- | --- | --- | --- |
+| Arma comum | — | — | — |
+| Habilidade E | 3 | — | — |
+| Morte de elite | 3,5 | 45 ms | — |
+| Mini-chefe | 6 | 70 ms | — |
+| Ultimate R | 11 | 85 ms | 0,30 |
+| Morte de chefe | 16 | 220 ms | 0,45 |
+
+- **Tremor**: use `shakeTier('elite')` e não `shakeIt(4)`. Número solto foi o que achatou a escada antes.
+- **Hit-stop**: `hitStop(s)` congela a simulação por `s` segundos — o laço em `main.js` para de chamar `update()` mas continua desenhando. Para evento que acontece em rajada (crítico), use `hitStopRaro(s, intervalo)`, que respeita um intervalo mínimo; sem isso vira engasgo com 300 inimigos na tela.
+- **Ondas**: `addWave(x,y,raio,cor,espessura,duração)`; `updateWaves` roda no `update()` e também durante o congelamento, e `drawWaves()` é chamado no espaço do mundo, dentro do `draw()`.
+- As duas camadas respeitam as opções: `SAVE.set.shake` e `SAVE.set.juice`. Quem desliga, não sente nada — isso não é enfeite, é acessibilidade.
 
 ### Limites da arena
 
@@ -281,7 +302,7 @@ O mundo **não é mais infinito**. Cada mapa tem `rad` em `MAPS` (meia-largura d
 **Próximos passos combinados com o dono** (em ordem, do dossiê do Swarm):
 
 1. ~~Portão das passivas por objetivo, 3 espaços iniciais e teto de nível 99.~~ **Feito.**
-2. Sensação de combate: *hit-stop* de 2 a 3 quadros em crítico e em morte de elite; tremor de tela em camadas (elite < chefe < ultimate); e a escala de importância do guia de VFX da Riot — hoje a ultimate não parece muito maior que uma arma comum, e devia parecer absurda ao lado.
+2. ~~Sensação de combate: hit-stop, tremor em camadas e a escala de importância da ultimate.~~ **Feito** — ver "Escala de importância" acima.
 3. Conteúdo: mais aprimoramentos (temos 17, o Swarm passa de 30, sempre com vantagem **e** desvantagem no mesmo cartão), variantes de missão para a torre roxa (hoje é sempre "colete N"), e três inimigos novos — morteiro que mira onde você vai estar, escudeiro que só morre pelo flanco, e enxameador que racha em três ao morrer.
 4. Progressão visível: brilho do Poder Anima **no mundo** ao chegar a 100 (hoje só existe a etiqueta no HUD), contador de maestria por lutador na tela de seleção, e a provação vermelha soltando Cartões de Acesso em vez de só ouro.
 - Ideia em estudo: versão 3D com Three.js, mantendo a lógica atual e trocando só o desenho (estilo low-poly).

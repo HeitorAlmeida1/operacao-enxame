@@ -292,6 +292,7 @@ function draw(){
   for(const tr of G.trains){const x1=tr.vx>0?tr.x-tr.len:tr.x;shadow(x1+tr.len/2,tr.y+tr.h/2+4,tr.len/2,6);ctx.fillStyle='#2a1c12';ctx.fillRect(x1,tr.y-tr.h/2,tr.len,tr.h);
     for(let i=0;i<4;i++){ctx.fillStyle='#ff8a3d';ctx.fillRect(x1+8+i*(tr.len/4),tr.y-tr.h/2+4,tr.len/4-16,tr.h-8);ctx.fillStyle='#ffd27a';ctx.fillRect(x1+14+i*(tr.len/4),tr.y-tr.h/2+7,tr.len/4-28,5)}
     const hx=tr.vx>0?tr.x:x1;glowDot(hx,tr.y,tr.h,'#ffe9a8',0.35)}
+  drawWaves();   // ondas de choque da ultimate e das mortes grandes
   for(const rg of G.rings){const a=Math.min(1,rg.life);ctx.setLineDash([10,8]);ctx.lineDashOffset=-t*40;ring(rg.x,rg.y,rg.r,'rgba(184,164,255,'+(0.8*a)+')',4);ctx.setLineDash([]);glowDot(rg.x,rg.y,rg.r,'#b8a4ff',0.05*a);for(let k=0;k<6;k++){const an=t*0.8+k*TAU/6;glowDot(rg.x+Math.cos(an)*rg.r,rg.y+Math.sin(an)*rg.r,6,'#efe8ff',0.8*a)}}
   for(const tn of G.tents){const a=Math.min(1,tn.life*2),L=tn.r*(1.1+(tn.slam>0?0.35:0)),bx=tn.x,by=tn.y;ctx.globalAlpha=a;shadow(bx,by+6,tn.r*0.45,tn.r*0.16);circle(bx,by,tn.r*0.32,'#123d30');
     ctx.strokeStyle='#2fae86';ctx.lineCap='round';ctx.lineWidth=tn.r*0.32;ctx.beginPath();ctx.moveTo(bx,by);const wv=Math.sin(t*6+tn.x)*0.35;ctx.quadraticCurveTo(bx+Math.cos(tn.a+wv)*L*0.6,by+Math.sin(tn.a+wv)*L*0.6,bx+Math.cos(tn.a)*L,by+Math.sin(tn.a)*L);ctx.stroke();

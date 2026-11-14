@@ -16,7 +16,7 @@ const SKEY='operacaoEnxame.v2';
 let SAVE={gold:0,up:{},done:{},tot:{}};
 try{const s=JSON.parse(localStorage.getItem(SKEY));if(s)SAVE=Object.assign(SAVE,s)}catch(e){}
 SAVE.tot=Object.assign({elites:0,fonte:0,minis:0,prov:0,pods:0,kills:0,imas:0},SAVE.tot||{});
-SAVE.set=Object.assign({nums:true,shake:true,sfx:0.6,music:0.45},SAVE.set||{});SAVE.winsF=SAVE.winsF||{};
+SAVE.set=Object.assign({nums:true,shake:true,juice:true,sfx:0.6,music:0.45},SAVE.set||{});SAVE.winsF=SAVE.winsF||{};
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}}
 
 /* Migração única: o portão das passivas e os 3 espaços iniciais vieram depois.
