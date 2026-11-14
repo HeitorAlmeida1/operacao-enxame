@@ -1,0 +1,117 @@
+const OBJ=[
+  {id:'win1',d:'Derrote a Rainha do Vazio no Distrito Industrial',r:'Libera o mapa Periferia'},
+  {id:'win2',d:'Derrote o Colosso na Periferia',r:'Libera o Laboratório e a dificuldade Difícil'},
+  {id:'win3',d:'Derrote a Devoradora no Laboratório',r:'Libera a Cabeça de Praia e o lutador Vex'},
+  {id:'win4',d:'Derrote o Senhor da Maré na Cabeça de Praia',r:'Ganha 3000 de ouro',gold:3000},
+  {id:'arco3',d:'Suba o Arco Ardente ao nível 3',r:'Libera a lutadora Rhea'},
+  {id:'minis',d:'Derrote 15 mini-chefes (somando partidas)',r:'Libera o lutador Kaze',n:15,k:'minis'},
+  {id:'prov',d:'Complete 5 provações vermelhas (Difícil ou Extremo)',r:'Libera a lutadora Pluma',n:5,k:'prov'},
+  {id:'elites',d:'Derrote 10 elites (somando partidas)',r:'Libera a arma Bombardeio Orbital',n:10,k:'elites'},
+  {id:'fonte',d:'Use a Fonte de Cura 3 vezes (somando partidas)',r:'Libera a arma Armadura Glacial',n:3,k:'fonte'},
+  {id:'lvl15',d:'Chegue ao nível 15 numa partida',r:'Libera a arma Mina Saltitante'},
+  {id:'lvl30',d:'Chegue ao nível 30 numa partida',r:'Libera a arma Aniquilador'},
+  {id:'rhea25',d:'Chegue ao nível 25 com a Rhea',r:'Libera a arma Trem Expresso'},
+  {id:'pods',d:'Quebre 50 caixas (somando partidas)',r:'Libera a arma Espada Estática',n:50,k:'pods'},
+  {id:'kills',d:'Derrote 5000 inimigos (somando partidas)',r:'Libera a arma Drone Felino',n:5000,k:'kills'},
+  {id:'evo1',d:'Evolua uma arma',r:'Ganha 300 de ouro',gold:300},
+  {id:'evo4',d:'Tenha 4 armas evoluídas ao mesmo tempo',r:'Ganha 1000 de ouro',gold:1000},
+  {id:'quest',d:'Complete uma missão de torre roxa',r:'Ganha 300 de ouro',gold:300},
+  {id:'hard',d:'Vença qualquer mapa no Difícil',r:'Ganha 1500 de ouro',gold:1500},
+  {id:'hard4',d:'Vença a Cabeça de Praia no Difícil',r:'Libera a dificuldade Extremo'},
+  {id:'extremo',d:'Vença qualquer mapa no Extremo',r:'Título Conquistador do Enxame e 5000 de ouro',gold:5000},
+  {id:'mil',d:'Derrote 1000 inimigos numa única partida',r:'Ganha 500 de ouro',gold:500},
+  {id:'aug3',d:'Tenha 3 aprimoramentos numa partida',r:'Ganha 500 de ouro',gold:500},
+  {id:'cheio',d:'Feche a build: 5 armas e todas as passivas no nível 5',r:'Ganha 1000 de ouro',gold:1000},
+  {id:'furia',d:'Derrote um chefe depois que ele entrar em fúria (20:00)',r:'Ganha 800 de ouro',gold:800},
+  {id:'todos',d:'Vença com os 9 lutadores (qualquer mapa)',r:'Ganha 2500 de ouro',gold:2500,n:9,k:'winsF'},
+  {id:'minis25',d:'Derrote 25 mini-chefes (somando partidas)',r:'Libera a lutadora Lebre',n:25,k:'minis'},
+  {id:'evo3',d:'Tenha 3 armas evoluídas ao mesmo tempo',r:'Libera a lutadora Tora'},
+  {id:'win1h',d:'Derrote a Rainha do Vazio no Difícil',r:'Libera a lutadora Rivka'},
+  {id:'kira25',d:'Chegue ao nível 25 com a Kira',r:'Libera a arma Luva Vórtice'},
+  {id:'kaze30',d:'Chegue ao nível 30 com o Kaze',r:'Libera a arma Balestra Coelha'},
+  {id:'rivka35',d:'Chegue ao nível 35 com a Rivka',r:'Libera a arma Rastro Venenoso'},
+  {id:'cinco5',d:'Tenha 5 armas no nível 5 numa partida',r:'Libera a arma Robô Urso'},
+  {id:'prov1',d:'Complete uma provação vermelha',r:'Libera a arma Minas Anima'},
+];
+function complete(id){if(SAVE.done[id])return;SAVE.done[id]=true;const o=OBJ.find(x=>x.id===id);if(o.gold)SAVE.gold+=o.gold;save();setTimeout(()=>banner('Objetivo concluído! '+o.r),900)}
+function addTot(k,n){SAVE.tot[k]=(SAVE.tot[k]||0)+n;for(const o of OBJ)if(o.k===k&&SAVE.tot[k]>=o.n)complete(o.id)}
+
+const UPG={
+  dano:{n:'Dano',d:'+5% de dano',max:5,c:120},vida:{n:'Vida',d:'+10 de vida máxima',max:5,c:100},
+  arm:{n:'Armadura',d:'+3 de armadura',max:5,c:120},regen:{n:'Regeneração',d:'+0,5 de vida por segundo',max:4,c:120},
+  vel:{n:'Velocidade',d:'+4% de velocidade',max:5,c:100},acel:{n:'Aceleração',d:'+5 de aceleração',max:5,c:150},
+  area:{n:'Área',d:'+4% de área',max:4,c:150},crit:{n:'Crítico',d:'+3% de chance de crítico',max:4,c:150},
+  pick:{n:'Coleta',d:'+20% de raio de coleta',max:3,c:80},xp:{n:'Experiência',d:'+10% de EXP',max:5,c:150},
+  gold:{n:'Ganho de ouro',d:'+15% de ouro',max:3,c:200},proj:{n:'Projéteis',d:'+1 projétil',max:1,c:2500},
+  dur:{n:'Duração',d:'+5% de duração',max:4,c:150},
+  slot:{n:'Espaço de passiva',d:'+1 espaço de passiva (4 → 6)',max:2,c:800},
+  anima:{n:'Poder Anima',d:'Por nível: +1% de dano, +1% de velocidade, +1 de aceleração e +1% de coleta. No 100 seu lutador brilha.',max:100,c:3000,flat:true},
+};
+const upCost=k=>UPG[k].flat?UPG[k].c:UPG[k].c*((SAVE.up[k]||0)+1);
+
+/* ---------- Dados do jogo ---------- */
+const PASSIVES={
+  dano:{n:'Dano',d:'+10% de dano em tudo',c:'#ff6b6b'},
+  acel:{n:'Aceleração',d:'+10 de aceleração (recargas menores)',c:'#4fe3d6'},
+  area:{n:'Área',d:'+11% de tamanho de área',c:'#ffb84d'},
+  vida:{n:'Vida Máxima',d:'+25 de vida máxima',c:'#7ee081'},
+  regen:{n:'Regeneração',d:'+1 de vida por segundo',c:'#5fd0ff'},
+  proj:{n:'Projéteis',d:'+1 projétil nos níveis 1, 3 e 5',c:'#ff5fa2'},
+  vel:{n:'Velocidade',d:'+9% de velocidade de movimento',c:'#c9b8ff'},
+  arm:{n:'Armadura',d:'+8 de armadura (reduz o dano recebido)',c:'#e0c27a'},
+  crit:{n:'Crítico',d:'+8% de chance de acerto crítico (dano dobrado)',c:'#ffe066'},
+  coleta:{n:'Coleta',d:'+35% de raio de coleta',c:'#8fd6ff'},
+  exp:{n:'EXP',d:'+10% de experiência ganha',c:'#a78bfa'},
+  dur:{n:'Duração',d:'+12% de duração (fogo, invocações, tentáculos, lâminas)',c:'#7fd1b9'},
+};
+const MAPS={
+  distrito:{n:'Distrito Industrial',boss:'Rainha do Vazio',bg:'#0b0d18',grid:'#161b2f',req:null,mul:1,mech:'Fonte de Cura'},
+  periferia:{n:'Periferia',boss:'Colosso Primordial',bg:'#110d12',grid:'#241823',req:'win1',mul:1.25,mech:'Canhão de Íons'},
+  lab:{n:'Laboratório Subterrâneo',boss:'Devoradora do Vazio',bg:'#081114',grid:'#12252b',req:'win2',mul:1.6,mech:'Bombas de Gelo'},
+  praia:{n:'Cabeça de Praia',boss:'Senhor da Maré',bg:'#0a0f1f',grid:'#17223f',req:'win3',mul:2,mech:'Maré subindo'},
+};
+const DIFF={
+  normal:{n:'Normal',hp:1,dmg:1,gold:1,req:null,s:'Para aprender'},
+  hard:{n:'Difícil',hp:2.6,dmg:1.6,gold:1.5,req:'win2',s:'Mais fortes, +50% de ouro, provações'},
+  extremo:{n:'Extremo',hp:5.5,dmg:2.4,gold:2.25,req:'hard4',s:'Para quem quer sofrer, ouro x2,25'},
+};
+const TYPES={
+  mini:{r:11,hp:18,spd:78,dmg:9,c:'#7c5cff',xp:1},
+  brute:{r:18,hp:60,spd:56,dmg:16,c:'#b14cff',xp:3},
+  runner:{r:9,hp:12,spd:125,dmg:7,c:'#39d98a',xp:1},
+  spitter:{r:13,hp:26,spd:60,dmg:8,c:'#ff7a59',xp:2,ranged:true},
+  sombra:{r:12,hp:30,spd:70,dmg:11,c:'#5b4bd6',xp:2,blink:true},
+  bomba:{r:12,hp:22,spd:110,dmg:6,c:'#ff9a3d',xp:2,bomb:true},
+  blindado:{r:20,hp:110,spd:40,dmg:18,c:'#6a7aa8',xp:4,tough:0.5},
+  saltador:{r:12,hp:34,spd:62,dmg:12,c:'#3fd0c9',xp:2,leap:true},
+  chefe:{r:34,hp:230,spd:46,dmg:26,c:'#d0458a',xp:25},
+};
+const AUGS={
+  vidro:{n:'Canhão de Vidro',d:'+40% de dano, mas −40% de vida máxima.'},
+  pesado:{n:'Peso Pesado',d:'+50% de dano, mas −30 de aceleração.'},
+  mini:{n:'Tamanho Mini',d:'−20% de vida, +20% de velocidade e +36 de aceleração.'},
+  gigante:{n:'Maior que a Vida',d:'+30% de vida e +30% de área, mas −15% de velocidade.'},
+  colecionador:{n:'Colecionador',d:'Cada Cartão de Acesso pego daqui em diante dá +5% de dano.'},
+  veloz:{n:'Corredor Aríete',d:'+10% de velocidade; cada 1% de velocidade bônus vira +1% de dano.'},
+  ult:{n:'Ultimate Turbo',d:'Sua ultimate recarrega duas vezes mais rápido.'},
+  spray:{n:'Spray e Reza',d:'+3 projéteis, mas −30% de dano.'},
+  perto:{n:'À Queima-Roupa',d:'Até +30% de dano em inimigos perto de você.'},
+  longe:{n:'Longo Alcance',d:'Até +30% de dano em inimigos longe de você.'},
+  peixe:{n:'Pescador',d:'Inimigos têm 4% de chance de soltar um kit de cura.'},
+  blindado:{n:'Blindado',d:'+20 de armadura e +0,5% de dano por ponto de armadura.'},
+  impostos:{n:'Morte e Impostos',d:'Inimigos têm 4% de chance a mais de soltar ouro.'},
+  elite:{n:'Bombardeiro de Elite',d:'+30% de dano em elites e chefes; elites mortos deixam uma bomba.'},
+  festa:{n:'Celebração',d:'Por 8 s depois de subir de nível: +25% de dano, +30% de velocidade e +40 de aceleração.'},
+  pets:{n:'Pet de Apoio',d:'Suas invocações (drone, robô, trem) causam 50% a mais de dano.'},
+  ima:{n:'Ímã Preguiçoso',d:'−80% de raio de coleta, mas a cada 45 s puxa tudo do mapa.'},
+};
+const BOONS=[
+  {n:'Supercarro',d:'Invulnerável por 6 s',f(){P.invuln=Math.max(P.invuln,6)}},
+  {n:'Arsenal Felino',d:'+2 projéteis e +40% de área por 12 s',b:{t:12,proj:2,area:0.4}},
+  {n:'Piloto Automático',d:'+70% de velocidade por 12 s',b:{t:12,spd:0.7}},
+  {n:'Fogo Rápido',d:'+80 de aceleração por 12 s',b:{t:12,haste:80}},
+  {n:'Escudo do Esquadrão',d:'Escudo de 60% da vida por 12 s',f(){P.shield=0.6*ST.maxHp;P.shieldT=12}},
+  {n:'Cura em Cadeia',d:'Cura a cada abate por 12 s',b:{t:12,lifeOnKill:2}},
+  {n:'Batedor de Carteira',d:'Abates soltam ouro por 12 s',b:{t:12,goldOnKill:1}},
+  {n:'Ondas Gélidas',d:'Congela tudo em volta a cada 2 s por 10 s',f(){for(let i=0;i<5;i++)addTimer({t:i*2,fn(){fx(P.x,P.y,10,200,'#9fd4ff',0.4);for(const e of G.enemies)if(!e.dead&&!e.boss&&d2(e,P)<200*200)e.frozenT=Math.max(e.frozenT,1.5)}})}},
+];
