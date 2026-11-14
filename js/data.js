@@ -51,40 +51,57 @@ const upCost=k=>UPG[k].flat?UPG[k].c:UPG[k].c*((SAVE.up[k]||0)+1);
 
 /* ---------- Dados do jogo ---------- */
 const PASSIVES={
-  dano:{n:'Dano',d:'+10% de dano em tudo',c:'#ff6b6b'},
-  acel:{n:'Aceleração',d:'+10 de aceleração (recargas menores)',c:'#4fe3d6'},
-  area:{n:'Área',d:'+11% de tamanho de área',c:'#ffb84d'},
-  vida:{n:'Vida Máxima',d:'+25 de vida máxima',c:'#7ee081'},
-  regen:{n:'Regeneração',d:'+1 de vida por segundo',c:'#5fd0ff'},
-  proj:{n:'Projéteis',d:'+1 projétil nos níveis 1, 3 e 5',c:'#ff5fa2'},
-  vel:{n:'Velocidade',d:'+9% de velocidade de movimento',c:'#c9b8ff'},
-  arm:{n:'Armadura',d:'+8 de armadura (reduz o dano recebido)',c:'#e0c27a'},
-  crit:{n:'Crítico',d:'+8% de chance de acerto crítico (dano dobrado)',c:'#ffe066'},
-  coleta:{n:'Coleta',d:'+35% de raio de coleta',c:'#8fd6ff'},
-  exp:{n:'EXP',d:'+10% de experiência ganha',c:'#a78bfa'},
-  dur:{n:'Duração',d:'+12% de duração (fogo, invocações, tentáculos, lâminas)',c:'#7fd1b9'},
+  dano:{n:'Dano',d:'+10% de dano em tudo',c:'#d0503c'},
+  acel:{n:'Aceleração',d:'+10 de aceleração (recargas menores)',c:'#e8873a'},
+  area:{n:'Área',d:'+11% de tamanho de área',c:'#f2c14e'},
+  vida:{n:'Vida Máxima',d:'+25 de vida máxima',c:'#7fb749'},
+  regen:{n:'Regeneração',d:'+1 de vida por segundo',c:'#5bb6d6'},
+  proj:{n:'Projéteis',d:'+1 projétil nos níveis 1, 3 e 5',c:'#e07ba8'},
+  vel:{n:'Velocidade',d:'+9% de velocidade de movimento',c:'#8ec85a'},
+  arm:{n:'Armadura',d:'+8 de armadura (reduz o dano recebido)',c:'#a98a5e'},
+  crit:{n:'Crítico',d:'+8% de chance de acerto crítico (dano dobrado)',c:'#f0e05a'},
+  coleta:{n:'Coleta',d:'+35% de raio de coleta',c:'#8fd8ee'},
+  exp:{n:'EXP',d:'+10% de experiência ganha',c:'#8e6bb0'},
+  dur:{n:'Duração',d:'+12% de duração (fogo, invocações, tentáculos, lâminas)',c:'#5aa88a'},
 };
+/* rad = meia-largura da arena. O mundo é um quadrado de 2*rad centrado em (0,0);
+   wall = cor da barreira de contenção; neon = acento do mapa. */
 const MAPS={
-  distrito:{n:'Distrito Industrial',boss:'Rainha do Vazio',bg:'#0b0d18',grid:'#161b2f',req:null,mul:1,mech:'Fonte de Cura'},
-  periferia:{n:'Periferia',boss:'Colosso Primordial',bg:'#110d12',grid:'#241823',req:'win1',mul:1.25,mech:'Canhão de Íons'},
-  lab:{n:'Laboratório Subterrâneo',boss:'Devoradora do Vazio',bg:'#081114',grid:'#12252b',req:'win2',mul:1.6,mech:'Bombas de Gelo'},
-  praia:{n:'Cabeça de Praia',boss:'Senhor da Maré',bg:'#0a0f1f',grid:'#17223f',req:'win3',mul:2,mech:'Maré subindo'},
+  distrito:{n:'Campina de Pedravil',boss:'Rainha do Vazio',bg:'#7cae4e',grid:'#74a647',req:null,mul:1,mech:'Fonte de Cura',
+    rad:2300,wall:'#8a5a2b',neon:'#f2c14e',accent:'#d0503c',sky:'#9ed66b'},
+  periferia:{n:'Ermo Rachado',boss:'Colosso Primordial',bg:'#d9bc82',grid:'#cfaf74',req:'win1',mul:1.25,mech:'Canhão de Íons',
+    rad:2500,wall:'#a06a38',neon:'#e8873a',accent:'#d0503c',sky:'#e8c87d'},
+  lab:{n:'Gruta Fungosa',boss:'Devoradora do Vazio',bg:'#6b675d',grid:'#625e55',req:'win2',mul:1.6,mech:'Bombas de Gelo',
+    rad:2100,wall:'#4e4239',neon:'#8e6bb0',accent:'#d0503c',sky:'#6e6b61'},
+  praia:{n:'Enseada Salgada',boss:'Senhor da Maré',bg:'#dec28d',grid:'#d3b47f',req:'win3',mul:2,mech:'Maré subindo',
+    rad:2700,wall:'#8a5a2b',neon:'#5bb6d6',accent:'#f2c14e',sky:'#ead3a0'},
 };
+/* ---------- Limites da arena ---------- */
+const mapRad=()=>MAPS[G.map].rad;
+const clampWorld=(o,pad=0)=>{const R=mapRad()-pad;o.x=Math.max(-R,Math.min(R,o.x));o.y=Math.max(-R,Math.min(R,o.y));return o};
+const inWorld=(x,y,pad=0)=>{const R=mapRad()-pad;return x>=-R&&x<=R&&y>=-R&&y<=R};
+/* devolve um ponto a 'dist' de (ox,oy) que caia dentro da arena */
+function spotNear(ox,oy,dMin,dMax,pad=90){
+  for(let i=0;i<14;i++){const a=Math.random()*TAU,d=rnd(dMin,dMax),x=ox+Math.cos(a)*d,y=oy+Math.sin(a)*d;
+    if(inWorld(x,y,pad))return{x,y}}
+  const R=mapRad()-pad;return{x:Math.max(-R,Math.min(R,ox)),y:Math.max(-R,Math.min(R,oy))}}
+/* hp = vida do inimigo, dmg = dano de contato/ataque, sp = dano de habilidade (chefe, poças,
+   mecânica de mapa). Como no Swarm, o dano de ataque sobe mais rápido que o de habilidade. */
 const DIFF={
-  normal:{n:'Normal',hp:1,dmg:1,gold:1,req:null,s:'Para aprender'},
-  hard:{n:'Difícil',hp:2.6,dmg:1.6,gold:1.5,req:'win2',s:'Mais fortes, +50% de ouro, provações'},
-  extremo:{n:'Extremo',hp:5.5,dmg:2.4,gold:2.25,req:'hard4',s:'Para quem quer sofrer, ouro x2,25'},
+  normal:{n:'História',hp:1,dmg:1,sp:1,gold:1,req:null,s:'Para aprender o jogo'},
+  hard:{n:'Difícil',hp:3,dmg:2,sp:1.5,gold:1.5,req:'win2',s:'Vida 3x · ataque 2x · +50% de ouro · provações'},
+  extremo:{n:'Extremo',hp:7,dmg:3,sp:2,gold:2.25,req:'hard4',s:'Vida 7x · ataque 3x · ouro 2,25x'},
 };
 const TYPES={
-  mini:{r:11,hp:18,spd:78,dmg:9,c:'#7c5cff',xp:1},
-  brute:{r:18,hp:60,spd:56,dmg:16,c:'#b14cff',xp:3},
-  runner:{r:9,hp:12,spd:125,dmg:7,c:'#39d98a',xp:1},
-  spitter:{r:13,hp:26,spd:60,dmg:8,c:'#ff7a59',xp:2,ranged:true},
-  sombra:{r:12,hp:30,spd:70,dmg:11,c:'#5b4bd6',xp:2,blink:true},
-  bomba:{r:12,hp:22,spd:110,dmg:6,c:'#ff9a3d',xp:2,bomb:true},
-  blindado:{r:20,hp:110,spd:40,dmg:18,c:'#6a7aa8',xp:4,tough:0.5},
-  saltador:{r:12,hp:34,spd:62,dmg:12,c:'#3fd0c9',xp:2,leap:true},
-  chefe:{r:34,hp:230,spd:46,dmg:26,c:'#d0458a',xp:25},
+  mini:{r:11,hp:18,spd:78,dmg:9,c:'#8ec85a',xp:1},
+  brute:{r:18,hp:60,spd:56,dmg:16,c:'#c0703a',xp:3},
+  runner:{r:9,hp:12,spd:125,dmg:7,c:'#e8c04a',xp:1},
+  spitter:{r:13,hp:26,spd:60,dmg:8,c:'#6fb3d6',xp:2,ranged:true},
+  sombra:{r:12,hp:30,spd:70,dmg:11,c:'#7a6bb0',xp:2,blink:true},
+  bomba:{r:12,hp:22,spd:110,dmg:6,c:'#d0503c',xp:2,bomb:true},
+  blindado:{r:20,hp:110,spd:40,dmg:18,c:'#9d9a8e',xp:4,tough:0.5},
+  saltador:{r:12,hp:34,spd:62,dmg:12,c:'#5aa88a',xp:2,leap:true},
+  chefe:{r:34,hp:230,spd:46,dmg:26,c:'#c05a8e',xp:25},
 };
 const AUGS={
   vidro:{n:'Canhão de Vidro',d:'+40% de dano, mas −40% de vida máxima.'},

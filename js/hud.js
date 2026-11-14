@@ -16,7 +16,7 @@ function defeat(){if(G.state!=='over')endScreen(false)}
 /* ---------- HUD ---------- */
 let bannerT=0;
 function banner(t){const b=$('banner');b.textContent=t;b.style.opacity=1;clearTimeout(bannerT);bannerT=setTimeout(()=>b.style.opacity=0,2600)}
-function pipsHTML(n){return '<span class="pips">'+[1,2,3,4,5].map(i=>`<span class="${i<=n?'on':''}"></span>`).join('')+'</span>'}
+function pipsHTML(n,cls){return '<span class="pips'+(cls?' '+cls:'')+'">'+[1,2,3,4,5].map(i=>`<span class="${i<=n?'on':''}"></span>`).join('')+'</span>'}
 function hud(){
   $('timer').textContent=fmt(G.t);
   if(!G.bossSpawned)$('bossNote').textContent=MAPS[G.map].boss+' em '+fmt(BOSS_T-G.t);
@@ -24,6 +24,8 @@ function hud(){
   const qt=G.quest?'Missão: '+G.quest.got+'/'+G.quest.need+' · '+Math.ceil(G.quest.t)+' s':G.trial?'Provação: fique no círculo · '+Math.ceil(G.trial.t)+' s':'';
   $('quest').hidden=!qt;$('quest').textContent=qt;
   $('lvl').textContent='Nível '+P.lvl;$('hpTxt').textContent=Math.ceil(P.hp)+'/'+ST.maxHp;
+  if(!G.faceSet){G.faceSet=true;$('pFace').src=iconURL('f:'+P.fid);$('fname').textContent=P.f.n+' · '+P.f.t;
+    $('animaMark').hidden=(SAVE.up.anima||0)<100}
   $('hpBar').firstElementChild.style.width=(P.hp/ST.maxHp*100)+'%';$('shBar').style.width=Math.min(100,P.shield/ST.maxHp*100)+'%';
   $('kills').textContent=G.kills+' abates';$('goldTxt').textContent=Math.round(G.gold)+' ouro';$('xp').firstElementChild.style.width=(P.xp/P.xpNext*100)+'%';
   $('aimMode').textContent='Mira: '+(manual?'mouse':'automática')+' (C)'+(P.carry?' · carregando célula':'');
@@ -34,9 +36,12 @@ function hud(){
     H4('Armas ('+P.weapons.length+'/5)');
     for(const w of P.weapons){const d=WEAPONS[w.id],row=document.createElement('div');row.className='inv';row.innerHTML='<img class="ico s" alt=""><b></b>'+pipsHTML(w.lvl);row.querySelector('img').src=iconURL('w:'+w.id);
       const b=row.querySelector('b');b.textContent=w.evo?'★ '+d.evoN:d.n;if(w.evo)b.className='evo';r.appendChild(row);
-      if(!w.evo){const n=document.createElement('div');n.className='need';n.textContent='evolui com '+PASSIVES[d.evo].n+((P.pas[d.evo]||0)>0?' ✓':'');r.appendChild(n)}}
+      if(!w.evo){const ok=(P.pas[d.evo]||0)>0,n=document.createElement('div');n.className='need'+(ok&&w.lvl>=5?' ready':'');
+        n.textContent=(ok&&w.lvl>=5?'★ pronta — pegue um Cartão':'evolui com '+PASSIVES[d.evo].n+(ok?' ✓':''));r.appendChild(n)}}
     H4('Passivas ('+Object.keys(P.pas).length+'/'+slots()+')');
-    for(const id in P.pas){const row=document.createElement('div');row.className='inv';row.innerHTML='<img class="ico s" alt=""><b></b>'+pipsHTML(P.pas[id]);row.querySelector('img').src=iconURL('p:'+id);row.querySelector('b').textContent=PASSIVES[id].n;r.appendChild(row)}
-    const ak=Object.keys(P.aug);if(ak.length){H4('Aprimoramentos');for(const id of ak){const row=document.createElement('div');row.className='inv';row.innerHTML='<img class="ico s" alt=""><b class="aug"></b>';row.firstChild.src=iconURL('aug');row.lastChild.textContent=AUGS[id].n;r.appendChild(row)}}}
+    for(const id in P.pas){const row=document.createElement('div');row.className='inv';row.innerHTML='<img class="ico s" alt=""><b></b>'+pipsHTML(P.pas[id],'p');row.querySelector('img').src=iconURL('p:'+id);row.querySelector('b').textContent=PASSIVES[id].n;r.appendChild(row)}
+    const ak=Object.keys(P.aug),ab=$('augs');ab.innerHTML='';ab.hidden=!ak.length;
+    if(ak.length){const h=document.createElement('div');h.className='ahead';h.textContent='Aprimoramentos';ab.appendChild(h);
+      for(const id of ak){const row=document.createElement('div');row.className='augchip';row.innerHTML='<img class="ico s" alt=""><span></span>';row.firstChild.src=iconURL('aug');row.lastChild.textContent=AUGS[id].n;ab.appendChild(row)}}}
 }
 

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Operação Enxame</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Inter:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap">
 <link rel="stylesheet" href="css/style.css">
 
 </head>
@@ -19,9 +19,17 @@
   <div id="bossBar" hidden><i></i></div>
 </div>
 <div class="hud" id="left" hidden>
-  <div style="display:flex;justify-content:space-between;align-items:baseline"><span id="lvl" style="font-size:18px;font-weight:700">Nível 1</span><span class="small" id="hpTxt">100/100</span></div>
-  <div class="bar" id="hpBar"><i></i><div id="shBar"></div></div>
-  <span class="small"><span id="kills">0 abates</span> · <span id="goldTxt">0 ouro</span></span>
+  <div class="plate">
+    <div class="top">
+      <img class="face" id="pFace" alt="">
+      <div class="who"><span id="lvl">Nível 1</span><span id="fname"></span></div>
+      <span id="animaMark" hidden>ANIMA</span>
+    </div>
+    <div class="bar" id="hpBar"><i></i><div id="shBar"></div></div>
+    <div class="nums"><span class="small" id="kills">0 abates</span><span id="hpTxt">100/100</span></div>
+    <div class="nums"><span class="small" id="goldTxt">0 ouro</span></div>
+  </div>
+  <div id="augs" hidden></div>
 </div>
 <div class="hud" id="right" hidden></div>
 <div class="hud" id="abil" hidden>
@@ -93,15 +101,19 @@
 <div class="overlay mid" id="choice" hidden>
   <div class="box">
     <h2 id="choiceTitle">Subiu de nível!</h2>
+    <div id="choiceTimer"><i></i></div>
     <div class="cards" id="choiceCards"></div>
   </div>
 </div>
 
 <div class="overlay mid" id="legend" hidden>
   <div class="box">
-    <h2>Tabela de evoluções</h2>
-    <p>Arma no nível 5 + pelo menos 1 nível da passiva indicada + um Cartão de Acesso (cai de elites e mini-chefes).</p>
-    <div class="legwrap"><table class="leg"><thead><tr><th>Arma</th><th>Passiva</th><th>Vira</th></tr></thead><tbody id="legBody"></tbody></table></div>
+    <h2>Painel do lutador</h2>
+    <p>Arma no nível 5 + pelo menos 1 nível da passiva indicada + um Cartão de Acesso (cai de elites e mini-chefes). As linhas douradas já estão prontas.</p>
+    <div class="legcols">
+      <div class="statcol"><h3>Status</h3><div id="statBody"></div></div>
+      <div class="legwrap"><table class="leg"><thead><tr><th>Arma</th><th>Passiva</th><th>Vira</th></tr></thead><tbody id="legBody"></tbody></table></div>
+    </div>
   </div>
 </div>
 
@@ -129,6 +141,8 @@
 <script src="js/game.js"></script>
 <script src="js/hud.js"></script>
 <script src="js/draw.js"></script>
+<script src="js/world.js"></script>
+<script src="js/toon.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/input.js"></script>
 <script src="js/screens.js"></script>

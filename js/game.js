@@ -5,7 +5,7 @@ function newGame(fid){
   P={x:0,y:240,r:14,hp:100,lastMax:100,f,fid,face:-Math.PI/2,weapons:[{id:f.sig,lvl:1,evo:false,cd:0.3,st:{}}],pas:{},aug:{},collected:0,lvl:1,xp:0,xpNext:xpNext(1),eCd:0,rCd:0,shield:0,shieldT:0,invuln:0,buffs:[],killsP:0,pickP:0,atkT:0,spA:0,spCd:1,carry:false,moving:false,dash:null};
   G={t:0,map:selMap,diff:selDiff,enemies:[],proj:[],eproj:[],zones:[],marks:[],lines:[],hazards:[],orbs:[],cards:[],fxs:[],timers:[],explQ:[],beams:[],bolts:[],spires:[],fuel:[],pods:[],feathers:[],trains:[],walls:[],tents:[],rings:[],intro:null,
      spawnAcc:0,eliteNext:40,miniNext:150,spireNext:60,spireType:0,fuelNext:30,podNext:3,imaT:45,kills:0,gold:0,boss:null,bossSpawned:false,rage:false,quest:null,trial:null,sea:null,flash:0,pendLv:0,pendCard:0,pendAug:0,state:'play',
-     fountain:{x:0,y:0,r:70,charge:0,cd:0},cannon:{x:0,y:0,r:70,active:0,tick:0},bombs:[{x:-460,y:0,r:60,charge:0,cd:0},{x:460,y:0,r:60,charge:0,cd:0}],
+     fountain:{x:0,y:0,r:70,charge:0,cd:0},cannon:{x:0,y:0,r:70,active:0,tick:0},bombs:[{x:-MAPS[selMap].rad*0.45,y:-MAPS[selMap].rad*0.2,r:60,charge:0,cd:0},{x:MAPS[selMap].rad*0.45,y:MAPS[selMap].rad*0.2,r:60,charge:0,cd:0}],
      cmd:{x:60,y:180,cd:1,storm:15,a:0},tut:!SAVE.tut,tips:{},parts:[],nums:[],shake:0,hurtT:0,dmgBy:{},maxKillsRun:0,invDirty:true,hudT:0};
   ST=stats();P.hp=ST.maxHp;P.lastMax=ST.maxHp;manual=false;paused=false;
   ['start','end','pause','choice','upgrades','objectives','options','records'].forEach(i=>$(i).hidden=true);audioInit();MUS.step=0;
@@ -30,7 +30,7 @@ function explode(x,y,r,dm,c,missing){fx(x,y,r*0.2,r,c,0.35);burst(x,y,c,r>100?14
 function dropGold(x,y,v){G.orbs.push({x:x+rnd(-6,6),y:y+rnd(-6,6),gold:Math.max(1,Math.round(v))})}
 function kill(e){
   if(e.boss&&e.kind==='mare'&&!e.p2){e.p2=true;const dm=diffMul(),mm=MAPS[G.map].mul;shakeIt(12);e.max=e.hp=10000*dm.hp*mm*2.2;e.r=72;e.spd=90;e.slash=1.5;e.summon=4;
-    G.sea={x:P.x-1300,to:P.x-80,t:0};fx(e.x,e.y,20,260,'#5fa8ff',0.8);banner('Segunda fase! A maré está subindo');return}
+    G.sea={x:-mapRad()-200,to:mapRad()*0.75,t:0};fx(e.x,e.y,20,260,'#5fa8ff',0.8);banner('Segunda fase! A maré está subindo');return}
   e.dead=true;G.kills++;if(!e.boss)sfx('kill');smoke(e.x,e.y,e.r,e.c);burst(e.x,e.y,e.c,e.boss?50:(e.elite||e.miniboss)?16:3);if(e.elite||e.miniboss)shakeIt(4);if(G.kills>=1000)complete('mil');
   if(G.quest)G.quest.got++;
   for(const b of P.buffs){if(b.lifeOnKill)P.hp=Math.min(ST.maxHp,P.hp+b.lifeOnKill);if(b.goldOnKill&&Math.random()<0.3)dropGold(e.x,e.y,1)}
@@ -50,14 +50,17 @@ function takeDamage(a){if(P.invuln>0||G.state!=='play')return;a*=100/(100+Math.m
   if(P.shield>0){const s=Math.min(P.shield,a);P.shield-=s;a-=s}P.hp-=a;if(a>1){G.hurtT=0.2;sfx('hurt');shakeIt(Math.min(9,2+a/5))}if(P.hp<=0){P.hp=0;defeat()}}
 
 function addEnemy(type,elite,x,y,mini){const b=TYPES[type],dm=diffMul(),hm=(1+G.t/150)*(elite?14:1)*dm.hp*MAPS[G.map].mul;
-  if(x===undefined){const a=Math.random()*TAU,D=Math.hypot(W,H)/2+50;x=P.x+Math.cos(a)*D;y=P.y+Math.sin(a)*D}
+  if(x===undefined){const D=Math.hypot(W,H)/2+50;let a=Math.random()*TAU,ok=false;
+    for(let i=0;i<12&&!ok;i++){x=P.x+Math.cos(a)*D;y=P.y+Math.sin(a)*D;if(inWorld(x,y,10))ok=true;else a+=TAU/12}
+    if(!ok){const p=spotNear(P.x,P.y,D*0.6,D,10);x=p.x;y=p.y}}
   const e={x,y,r:b.r*(elite?1.7:1),hp:b.hp*hm,max:b.hp*hm,spd:b.spd*(elite?0.85:1)*(1+G.t/2700),
     dmg:b.dmg*(1+G.t/720)*(elite?1.5:1)*dm.dmg,c:b.c,type,elite,miniboss:!!mini,ranged:b.ranged,blink:b.blink,bomb:b.bomb,tough:b.tough,leap:b.leap,bt:rnd(1,3),lt:0,shootT:rnd(1,3),slamT:4,xpv:b.xp,kx:0,ky:0,slowT:0,frozenT:0,hitT:0};
   G.enemies.push(e);return e}
 function spawnBoss(){G.bossSpawned=true;const a=Math.random()*TAU,dm=diffMul(),mm=MAPS[G.map].mul;
   const b={distrito:{kind:'rainha',r:46,hp:7000,spd:72,dmg:40,c:'#e0457b'},periferia:{kind:'colosso',r:62,hp:9000,spd:55,dmg:50,c:'#3fbf7f'},
     lab:{kind:'devoradora',r:52,hp:9000,spd:80,dmg:45,c:'#9b4dff'},praia:{kind:'mare',r:58,hp:9000,spd:65,dmg:50,c:'#3f8cff'}}[G.map];
-  G.boss=Object.assign({boss:true,x:P.x+Math.cos(a)*420,y:P.y+Math.sin(a)*420,atk:2,dash:5,slam:3,summon:6,pools:3,slash:2,half:false,teleT:0,dashT:0,dvx:0,dvy:0,kx:0,ky:0,slowT:0,frozenT:0,hitT:0},b);
+  const bp=spotNear(P.x,P.y,380,460,120);
+  G.boss=Object.assign({boss:true,x:bp.x,y:bp.y,atk:2,dash:5,slam:3,summon:6,pools:3,slash:2,half:false,teleT:0,dashT:0,dvx:0,dvy:0,kx:0,ky:0,slowT:0,frozenT:0,hitT:0},b);
   G.boss.hp*=dm.hp*mm*2.2;G.boss.max=G.boss.hp;G.boss.dmg*=dm.dmg;
   G.enemies.push(G.boss);$('bossBar').hidden=false;$('bossNote').textContent=MAPS[G.map].boss;
   G.intro={t:3.4,max:3.4,name:MAPS[G.map].boss,sub:{distrito:'A senhora das hordas',periferia:'O punho da terra primordial',lab:'A fome que não acaba',praia:'O dono do mar escuro'}[G.map]};P.invuln=Math.max(P.invuln,2);shakeIt(14);sfx('alert');setTimeout(()=>sfx('boss'),700)}
@@ -70,13 +73,13 @@ function spawn(dt){const t=G.t,rate=t<BOSS_T?Math.min(16,1.4+t*0.016):6;G.spawnA
   if(t>=BOSS_T&&!G.bossSpawned)spawnBoss();
   if(G.boss&&!G.rage&&t>=RAGE_T){G.rage=true;banner('O chefe entrou em fúria!')}
   if(t>=G.spireNext&&t<BOSS_T){G.spireNext+=95;const types=G.diff==='normal'?['boon','quest']:['boon','quest','trial'];const ty=types[G.spireType++%types.length];
-    const a=Math.random()*TAU,D=rnd(350,520);G.spires.push({x:P.x+Math.cos(a)*D,y:P.y+Math.sin(a)*D,type:ty,cap:0,life:45});
+    const sp=spotNear(P.x,P.y,350,520,140);G.spires.push({x:sp.x,y:sp.y,type:ty,cap:0,life:45});
     banner({boon:'Torre de bênção apareceu (dourada)',quest:'Torre de missão apareceu (roxa)',trial:'Torre de provação apareceu (vermelha)'}[ty])}
-  if(G.map==='periferia'&&t>=G.fuelNext){G.fuelNext+=55;const a=Math.random()*TAU,D=rnd(450,750);G.fuel.push({x:G.cannon.x+Math.cos(a)*D,y:G.cannon.y+Math.sin(a)*D});banner('Célula de combustível caiu! Leve até o canhão')}
-  if(t>=G.podNext){G.podNext+=6;if(G.pods.length<7){const a=Math.random()*TAU,D=rnd(250,600);G.pods.push({x:P.x+Math.cos(a)*D,y:P.y+Math.sin(a)*D})}}
+  if(G.map==='periferia'&&t>=G.fuelNext){G.fuelNext+=55;const fp=spotNear(G.cannon.x,G.cannon.y,450,750,120);G.fuel.push({x:fp.x,y:fp.y});banner('Célula de combustível caiu! Leve até o canhão')}
+  if(t>=G.podNext){G.podNext+=6;if(G.pods.length<7){const pp=spotNear(P.x,P.y,250,600,80);G.pods.push({x:pp.x,y:pp.y})}}
 }
 
-function bossAI(e,dt,dx,dy,d){const dm=diffMul().dmg;
+function bossAI(e,dt,dx,dy,d){const dm=diffMul().sp;
   if(e.kind==='rainha'){
     e.atk-=dt;e.dash-=dt;e.spiral=(e.spiral??6)-dt;
     if(e.hp<e.max*0.6&&e.spiral<=0){e.spiral=G.rage?6:9;for(let i=0;i<30;i++)addTimer({t:i*0.08,fn(){if(e.dead)return;const a=i*0.5;for(const o of[0,Math.PI])G.eproj.push({x:e.x,y:e.y,vx:Math.cos(a+o)*190,vy:Math.sin(a+o)*190,r:7,dmg:10*dm,life:4,c:'#ff8fb8'})}})}
@@ -114,6 +117,8 @@ function update(dt){
   P.moving=!!(mx||my);
   if(P.dash){CUR='E';P.dash.t-=dt;P.x+=P.dash.vx*dt;P.y+=P.dash.vy*dt;for(const e of G.enemies){if(e.dead||P.dash.hit.has(e))continue;if(d2(e,P)<(e.r+30)**2){P.dash.hit.add(e);damage(e,P.dash.dmg)}}if(P.dash.t<=0)P.dash=null}
   else if(P.moving){const l=Math.hypot(mx,my),sp=ST.spd*(P.carry?0.85:1);P.x+=mx/l*sp*dt;P.y+=my/l*sp*dt;P.face=Math.atan2(my,mx)}
+  clampWorld(P,P.r);                      // a barreira da arena segura o jogador
+  for(const e of G.enemies)clampWorld(e,e.r*0.5);
   let heal=ST.regen;for(const b of P.buffs)if(b.heal)heal+=b.heal*ST.maxHp;P.hp=Math.min(ST.maxHp,P.hp+heal*dt);
   for(const tm of G.timers){tm.t-=dt;if(tm.t<=0){tm.done=true;CUR=tm.src;tm.fn()}}G.timers=G.timers.filter(t=>!t.done);
   P.eCd=Math.max(0,P.eCd-dt);P.rCd=Math.max(0,P.rCd-dt);P.invuln-=dt;P.shieldT-=dt;if(P.shieldT<=0)P.shield=0;G.flash=Math.max(0,G.flash-dt);
@@ -222,9 +227,9 @@ function mapUpdate(dt){CUR='mapa';
     if(b.cd<=0&&d2(b,P)<b.r*b.r){b.charge+=dt;if(b.charge>=1.5){b.charge=0;b.cd=40;sfx('freeze');fx(b.x,b.y,20,480,'#9fd4ff',0.8);banner('Bomba de Gelo detonada!');
       for(const e of G.enemies)if(!e.dead&&d2(e,b)<480*480){if(e.boss)e.slowT=3;else e.frozenT=Math.max(e.frozenT,3);damage(e,40+4*P.lvl)}}}
     else b.charge=Math.max(0,b.charge-dt)}}
-  else if(G.sea){const s=G.sea;s.t+=dt;s.x=Math.min(s.to,s.x+49*dt);if(P.x<s.x)takeDamage(40*diffMul().dmg*dt)}
+  else if(G.sea){const s=G.sea;s.t+=dt;s.x=Math.min(s.to,s.x+49*dt);if(P.x<s.x)takeDamage(40*diffMul().sp*dt)}
 }
-function addXp(v){P.xp+=v;while(P.xp>=P.xpNext){P.xp-=P.xpNext;P.lvl++;P.xpNext=xpNext(P.lvl);G.pendLv++;G.gold+=Math.round(2*ST.gold);
+function addXp(v){P.xp+=v;while(P.xp>=P.xpNext){P.xp-=P.xpNext;P.lvl++;P.xpNext=xpNext(P.lvl);G.pendLv++;G.gold+=Math.round(10*ST.gold);
   if(P.aug.festa)P.buffs.push({t:8,dmg:0.25,spd:0.3,haste:40});
   if(P.lvl===3)banner('E liberado: '+P.f.E.n);if(P.lvl===6)banner('R liberado: '+P.f.R.n);if(P.lvl>=15)complete('lvl15');if(P.fid==='kira'&&P.lvl>=25)complete('kira25');if(P.fid==='kaze'&&P.lvl>=30)complete('kaze30');if(P.fid==='rivka'&&P.lvl>=35)complete('rivka35');if(P.lvl>=30)complete('lvl30');if(P.fid==='rhea'&&P.lvl>=25)complete('rhea25')}}
 
@@ -243,16 +248,19 @@ function buildOptions(n){const o=[],extra=P.weapons.filter(w=>!WEAPONS[w.id].sig
   const r=shuffle(o).slice(0,n);return r.length?r:[{type:'heal'},{type:'gold'}].slice(0,Math.max(1,n))}
 function eligible(){return P.weapons.filter(w=>w.lvl>=5&&!w.evo&&(P.pas[WEAPONS[w.id].evo]||0)>0)}
 
-function optCard(o,i){const b=document.createElement('button');b.className='card';let tag,nm,ds,hint='',c;
-  if(o.type==='w'){const d=WEAPONS[o.id];c=d.c;nm=d.n;tag=o.lvl===1?'Nova arma':'Arma · nível '+o.lvl;ds=o.lvl===1?d.d:d.up;
-    hint='Evolui com '+PASSIVES[d.evo].n+((P.pas[d.evo]||0)>0?' (você já tem)':'')}
-  else if(o.type==='p'){const d=PASSIVES[o.id];c=d.c;nm=d.n;tag=o.lvl===1?'Nova passiva':'Passiva · nível '+o.lvl;ds=d.d;
-    const ks=P.weapons.filter(w=>WEAPONS[w.id].evo===o.id&&!w.evo).map(w=>WEAPONS[w.id].n);if(ks.length)hint='Chave de evolução: '+ks.join(', ')}
-  else if(o.type==='evo'){const d=WEAPONS[o.id];c='#ffcc4d';b.classList.add('evoCard');tag='Evolução';nm=d.evoN;ds=d.ed;hint=d.n+' + '+PASSIVES[d.evo].n}
+function optCard(o,i){const b=document.createElement('button');b.className='card';let tag,nm,ds,hint='',c,ribbon='';
+  if(o.type==='w'){const d=WEAPONS[o.id];c=d.c;nm=d.n;tag=o.lvl===1?'Nova arma':'Arma · nível '+o.lvl;ds=o.lvl===1?d.d:d.up;b.classList.add('wCard');
+    const tem=(P.pas[d.evo]||0)>0;hint='Evolui com '+PASSIVES[d.evo].n+(tem?' (você já tem)':'');
+    if(tem&&o.lvl>=5)ribbon='Pronta p/ evoluir'}
+  else if(o.type==='p'){const d=PASSIVES[o.id];c=d.c;nm=d.n;tag=o.lvl===1?'Nova passiva':'Passiva · nível '+o.lvl;ds=d.d;b.classList.add('pCard');
+    const ks=P.weapons.filter(w=>WEAPONS[w.id].evo===o.id&&!w.evo);if(ks.length)hint='Chave de evolução: '+ks.map(w=>WEAPONS[w.id].n).join(', ');
+    if(ks.some(w=>w.lvl>=5))ribbon='Destrava evolução'}
+  else if(o.type==='evo'){const d=WEAPONS[o.id];c='#ffcc4d';b.classList.add('evoCard');tag='Evolução';nm=d.evoN;ds=d.ed;hint=d.n+' + '+PASSIVES[d.evo].n;ribbon='Evolução'}
   else if(o.type==='aug'){const d=AUGS[o.id];c='#9b7bff';b.classList.add('augCard');tag='Aprimoramento';nm=d.n;ds=d.d;hint='Vale até o fim da partida'}
-  else if(o.type==='gold'){c='#ffcc4d';tag='Bônus';nm='Ouro';ds='Ganha 25 de ouro.'}
-  else{c='#7ee081';tag='Bônus';nm='Cura';ds='Recupera 30% da vida.'}
-  b.innerHTML=`<span class="tag"></span><span class="nm"><img class="ico" alt=""><span></span></span><span class="ds"></span>${hint?'<span class="hint"></span>':''}<span class="key">${i+1}</span>`;
+  else if(o.type==='gold'){c='#ffcc4d';b.classList.add('bCard');tag='Bônus';nm='Ouro';ds='Ganha 25 de ouro.'}
+  else{c='#7ee081';b.classList.add('bCard');tag='Bônus';nm='Cura';ds='Recupera 30% da vida.'}
+  b.innerHTML=`${ribbon?'<span class="ribbon"></span>':''}<span class="tag"></span><span class="nm"><img class="ico" alt=""><span></span></span><span class="ds"></span>${hint?'<span class="hint"></span>':''}<span class="key">${i+1}</span>`;
+  if(ribbon)b.querySelector('.ribbon').textContent=ribbon;
   const ik=o.type==='w'||o.type==='evo'?'w:'+o.id:o.type==='p'?'p:'+o.id:o.type;b.querySelector('.tag').textContent=tag;b.querySelector('img').src=iconURL(ik);b.querySelector('.nm span:last-child').textContent=nm;b.querySelector('.ds').textContent=ds;if(hint)b.querySelector('.hint').textContent=hint;
   b.onclick=()=>pick(o);return b}
 let curOpts=[];
@@ -261,6 +269,7 @@ function openChoice(kind){G.state='choice';let title;
   else if(kind==='card'){const ev=eligible();curOpts=ev.length?[{type:'evo',id:ev[0].id}]:buildOptions(1);title=ev.length?'Cartão de Acesso: evolução!':'Cartão de Acesso'}
   else{curOpts=buildOptions(3);title='Subiu para o nível '+P.lvl+'!'}
   if(!curOpts.length)curOpts=[{type:'heal'}];
+  G.choiceT=30;$('choiceTimer').classList.remove('urgent');$('choiceTimer').firstElementChild.style.width='100%';
   PAD.sel=0;sfx(kind==='level'?'level':'card');if(G.tut&&kind==='level')tip('choice','Escolha 1 carta. A linha dourada mostra a passiva que evolui cada arma: arma no nível 5 + essa passiva + um Cartão de Acesso.');
   $('choiceTitle').textContent=title;const box=$('choiceCards');box.innerHTML='';curOpts.forEach((o,i)=>box.appendChild(optCard(o,i)));$('choice').hidden=false;
   setTimeout(()=>{const f=box.querySelector('button');if(f)f.focus()},50)}
