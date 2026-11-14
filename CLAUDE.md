@@ -43,6 +43,8 @@ O código ficava num `index.html` único; em 2026-11-13 foi separado em arquivos
   Kira (Aceleração), Lumen (Projéteis), Rhea (Armadura), Vex (Vida Máxima), Kaze (Crítico), Pluma (Coleta), Lebre (EXP), Tora (Duração), Rivka (Velocidade).
 - **27 armas: 18 comuns + 9 exclusivas**, todas com evolução por passiva (conferido em 2026-11-13; o doc dizia 22+9, que estava errado).
 - **12 passivas**: Dano, Aceleração, Área, Vida Máxima, Regeneração, Projéteis, Velocidade, Armadura, Crítico, Coleta, EXP, Duração.
+  Como no Swarm, **só três vêm de fábrica** (Dano, Vida Máxima, Armadura); as outras nove são destravadas por objetivo — o campo `lock` em `PASSIVES` aponta o objetivo, e `pasUnlocked(id)` responde se já saiu.
+  Os espaços começam em **3** e vão até **6** comprando a melhoria `slot`. O nível máximo é **99** (`LVL_MAX`).
 - **4 mapas**: Distrito Industrial (Fonte de Cura, Rainha do Vazio), Periferia (Canhão de Íons, Colosso Primordial), Laboratório Subterrâneo (Bombas de Gelo, Devoradora do Vazio), Cabeça de Praia (maré subindo, Senhor da Maré com 2 fases). Cada chefe tem 3 mecânicas de ataque e uma tela de entrada.
 - **Inimigos**: mini, brute, runner, spitter, sombra, bomba, blindado, saltador, elites (dourados) e mini-chefes.
 - **3 dificuldades** (História / Difícil / Extremo), chefe aos 15:00 e fúria aos 20:00. Cada uma tem `hp`, `dmg` (ataque e contato), `sp` (habilidade de chefe e mecânica de mapa) e `gold`. Como no Swarm, `dmg` sobe mais rápido que `sp`.
@@ -126,6 +128,7 @@ O mundo **não é mais infinito**. Cada mapa tem `rad` em `MAPS` (meia-largura d
 - **Nada de material da Riot**: não use nomes de campeões, artes, sons ou logos do LoL. Personagens e armas são versões originais inspiradas nos papéis e mecânicas.
 - Textos do jogo em **português do Brasil**.
 - Não quebre saves antigos: ao adicionar campos em `SAVE`, use valores padrão com `Object.assign`.
+- Mudou **regra**, e não só dado? Então não basta o valor padrão: escreva uma migração em `js/core.js`, guardada por uma bandeira (`SAVE.mig1`, `mig2`...), que repare o save de quem já jogava. Exemplo pronto: quando os espaços de passiva caíram de 4 para 3 iniciais, a `mig1` devolveu um nível de `slot` a quem já tinha progresso e liberou as passivas cujo feito a pessoa comprovadamente já tinha cumprido.
 - Ao adicionar uma arma, inclua também o ícone em `iconPaint` e confira se a tabela de evoluções (Tab) continua certa.
 - Para mexer no visual de personagem, monstro ou chão, edite **`js/toon.js`**, não o `draw.js`.
 - Desenhou forma nova? Use `inked()`, `tBlob()` ou `tPoly()` para ela já sair com contorno. Forma sem contorno destoa na hora.
@@ -271,9 +274,16 @@ O mundo **não é mais infinito**. Cada mapa tem `rad` em `MAPS` (meia-largura d
 
 ## 4. Pendências e ideias
 
-- **Equilíbrio** ainda não foi testado por jogadores: chefes do Laboratório e da Praia podem estar fortes; o Aniquilador tende a dominar o placar de dano.
+- **Equilíbrio** ainda não foi testado por jogadores: chefes da Gruta e da Enseada podem estar fortes; o Aniquilador tende a dominar o placar de dano. Para medir sem chute, rode a simulação headless e leia o `G.dmgBy` de cada partida.
 - Leve emenda visível entre os blocos de cenário em alguns mapas.
-- Ainda não existe co-op (só solo).
+- Ainda não existe co-op (só solo). É o que mais falta para o Swarm de verdade, mas exige rede e sincronia — é outro projeto, não uma melhoria.
+
+**Próximos passos combinados com o dono** (em ordem, do dossiê do Swarm):
+
+1. ~~Portão das passivas por objetivo, 3 espaços iniciais e teto de nível 99.~~ **Feito.**
+2. Sensação de combate: *hit-stop* de 2 a 3 quadros em crítico e em morte de elite; tremor de tela em camadas (elite < chefe < ultimate); e a escala de importância do guia de VFX da Riot — hoje a ultimate não parece muito maior que uma arma comum, e devia parecer absurda ao lado.
+3. Conteúdo: mais aprimoramentos (temos 17, o Swarm passa de 30, sempre com vantagem **e** desvantagem no mesmo cartão), variantes de missão para a torre roxa (hoje é sempre "colete N"), e três inimigos novos — morteiro que mira onde você vai estar, escudeiro que só morre pelo flanco, e enxameador que racha em três ao morrer.
+4. Progressão visível: brilho do Poder Anima **no mundo** ao chegar a 100 (hoje só existe a etiqueta no HUD), contador de maestria por lutador na tela de seleção, e a provação vermelha soltando Cartões de Acesso em vez de só ouro.
 - Ideia em estudo: versão 3D com Three.js, mantendo a lógica atual e trocando só o desenho (estilo low-poly).
 - **Estilo denso do código**: o JS foi escrito com várias instruções por linha (linhas de até 445 caracteres). A separação em arquivos melhorou a navegação, mas não isso. Ideia: ao mexer num arquivo, desdobrar as linhas mais densas dele — em commits separados dos de funcionalidade.
 - Ainda não existe um harness de teste no repositório: o passo 2 de teste da seção 3 precisa ser remontado a cada vez. Valeria guardar um `tools/simular.js`.

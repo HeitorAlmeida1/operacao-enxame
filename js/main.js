@@ -80,6 +80,27 @@ function renderLegend(){
     r.innerHTML='<span></span><span></span>';
     r.firstChild.textContent=a;r.lastChild.textContent=b;sb.appendChild(r);
   }
+  // passivas ainda trancadas, com o que falta para liberar
+  const presas=Object.keys(PASSIVES).filter(id=>!pasUnlocked(id));
+  if(presas.length){
+    const h=document.createElement('h3');h.style.marginTop='14px';
+    h.textContent='Passivas trancadas ('+presas.length+')';sb.appendChild(h);
+    for(const id of presas){
+      const o=OBJ.find(x=>x.id===PASSIVES[id].lock);
+      const r=document.createElement('div');r.className='statrow';
+      r.innerHTML='<span></span><span></span>';
+      r.firstChild.textContent=PASSIVES[id].n;
+      let prog='';
+      if(o&&o.k)prog=' ('+Math.min(o.n,SAVE.tot[o.k]||0)+'/'+o.n+')';
+      r.lastChild.textContent=(o?o.d:'?')+prog;
+      r.lastChild.style.fontFamily='var(--body)';
+      r.lastChild.style.fontWeight='600';
+      r.lastChild.style.fontSize='11px';
+      r.lastChild.style.textAlign='right';
+      r.lastChild.style.maxWidth='62%';
+      sb.appendChild(r);
+    }
+  }
 }
 renderLegend();
 

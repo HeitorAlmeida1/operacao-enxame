@@ -32,6 +32,16 @@ const OBJ=[
   {id:'rivka35',d:'Chegue ao nível 35 com a Rivka',r:'Libera a arma Rastro Venenoso'},
   {id:'cinco5',d:'Tenha 5 armas no nível 5 numa partida',r:'Libera a arma Robô Urso'},
   {id:'prov1',d:'Complete uma provação vermelha',r:'Libera a arma Minas Anima'},
+  /* --- portões das passivas: só Armadura, Dano e Vida Máxima vêm de fábrica --- */
+  {id:'p_vel',   d:'Chegue ao nível 10 numa partida',               r:'Libera a passiva Velocidade'},
+  {id:'p_regen', d:'Sobreviva 5 minutos numa partida',              r:'Libera a passiva Regeneração'},
+  {id:'p_area',  d:'Derrote 15 elites (somando partidas)',          r:'Libera a passiva Área',    n:15,  k:'elites'},
+  {id:'p_exp',   d:'Quebre 200 caixas (somando partidas)',          r:'Libera a passiva EXP',     n:200, k:'pods'},
+  {id:'p_coleta',d:'Ative o ímã 5 vezes quebrando caixas',          r:'Libera a passiva Coleta',  n:5,   k:'imas'},
+  {id:'p_proj',  d:'Evolua qualquer arma',                          r:'Libera a passiva Projéteis'},
+  {id:'p_acel',  d:'Suba a Lâmina Bumerangue ao nível 2',           r:'Libera a passiva Aceleração'},
+  {id:'p_crit',  d:'Suba a Luva Vórtice ao nível 4',                r:'Libera a passiva Crítico'},
+  {id:'p_dur',   d:'Chegue ao nível 25 com a Tora',                 r:'Libera a passiva Duração'},
 ];
 function complete(id){if(SAVE.done[id])return;SAVE.done[id]=true;const o=OBJ.find(x=>x.id===id);if(o.gold)SAVE.gold+=o.gold;save();setTimeout(()=>banner('Objetivo concluído! '+o.r),900)}
 function addTot(k,n){SAVE.tot[k]=(SAVE.tot[k]||0)+n;for(const o of OBJ)if(o.k===k&&SAVE.tot[k]>=o.n)complete(o.id)}
@@ -44,25 +54,26 @@ const UPG={
   pick:{n:'Coleta',d:'+20% de raio de coleta',max:3,c:80},xp:{n:'Experiência',d:'+10% de EXP',max:5,c:150},
   gold:{n:'Ganho de ouro',d:'+15% de ouro',max:3,c:200},proj:{n:'Projéteis',d:'+1 projétil',max:1,c:2500},
   dur:{n:'Duração',d:'+5% de duração',max:4,c:150},
-  slot:{n:'Espaço de passiva',d:'+1 espaço de passiva (4 → 6)',max:2,c:800},
+  slot:{n:'Espaço de passiva',d:'+1 espaço de passiva (3 → 6)',max:3,c:800},
   anima:{n:'Poder Anima',d:'Por nível: +1% de dano, +1% de velocidade, +1 de aceleração e +1% de coleta. No 100 seu lutador brilha.',max:100,c:3000,flat:true},
 };
 const upCost=k=>UPG[k].flat?UPG[k].c:UPG[k].c*((SAVE.up[k]||0)+1);
 
 /* ---------- Dados do jogo ---------- */
+/* lock = objetivo que libera. Sem lock, a passiva vem de fábrica. */
 const PASSIVES={
   dano:{n:'Dano',d:'+10% de dano em tudo',c:'#d0503c'},
-  acel:{n:'Aceleração',d:'+10 de aceleração (recargas menores)',c:'#e8873a'},
-  area:{n:'Área',d:'+11% de tamanho de área',c:'#f2c14e'},
+  acel:{n:'Aceleração',d:'+10 de aceleração (recargas menores)',c:'#e8873a',lock:'p_acel'},
+  area:{n:'Área',d:'+11% de tamanho de área',c:'#f2c14e',lock:'p_area'},
   vida:{n:'Vida Máxima',d:'+25 de vida máxima',c:'#7fb749'},
-  regen:{n:'Regeneração',d:'+1 de vida por segundo',c:'#5bb6d6'},
-  proj:{n:'Projéteis',d:'+1 projétil nos níveis 1, 3 e 5',c:'#e07ba8'},
-  vel:{n:'Velocidade',d:'+9% de velocidade de movimento',c:'#8ec85a'},
+  regen:{n:'Regeneração',d:'+1 de vida por segundo',c:'#5bb6d6',lock:'p_regen'},
+  proj:{n:'Projéteis',d:'+1 projétil nos níveis 1, 3 e 5',c:'#e07ba8',lock:'p_proj'},
+  vel:{n:'Velocidade',d:'+9% de velocidade de movimento',c:'#8ec85a',lock:'p_vel'},
   arm:{n:'Armadura',d:'+8 de armadura (reduz o dano recebido)',c:'#a98a5e'},
-  crit:{n:'Crítico',d:'+8% de chance de acerto crítico (dano dobrado)',c:'#f0e05a'},
-  coleta:{n:'Coleta',d:'+35% de raio de coleta',c:'#8fd8ee'},
-  exp:{n:'EXP',d:'+10% de experiência ganha',c:'#8e6bb0'},
-  dur:{n:'Duração',d:'+12% de duração (fogo, invocações, tentáculos, lâminas)',c:'#5aa88a'},
+  crit:{n:'Crítico',d:'+8% de chance de acerto crítico (dano dobrado)',c:'#f0e05a',lock:'p_crit'},
+  coleta:{n:'Coleta',d:'+35% de raio de coleta',c:'#8fd8ee',lock:'p_coleta'},
+  exp:{n:'EXP',d:'+10% de experiência ganha',c:'#8e6bb0',lock:'p_exp'},
+  dur:{n:'Duração',d:'+12% de duração (fogo, invocações, tentáculos, lâminas)',c:'#5aa88a',lock:'p_dur'},
 };
 /* rad = meia-largura da arena. O mundo é um quadrado de 2*rad centrado em (0,0);
    wall = cor da barreira de contenção; neon = acento do mapa. */

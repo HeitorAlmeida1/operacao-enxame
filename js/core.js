@@ -15,9 +15,27 @@ function segDist2(px,py,x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,l=dx*dx+dy*dy||1;le
 const SKEY='operacaoEnxame.v2';
 let SAVE={gold:0,up:{},done:{},tot:{}};
 try{const s=JSON.parse(localStorage.getItem(SKEY));if(s)SAVE=Object.assign(SAVE,s)}catch(e){}
-SAVE.tot=Object.assign({elites:0,fonte:0,minis:0,prov:0,pods:0,kills:0},SAVE.tot||{});
+SAVE.tot=Object.assign({elites:0,fonte:0,minis:0,prov:0,pods:0,kills:0,imas:0},SAVE.tot||{});
 SAVE.set=Object.assign({nums:true,shake:true,sfx:0.6,music:0.45},SAVE.set||{});SAVE.winsF=SAVE.winsF||{};
 function save(){try{localStorage.setItem(SKEY,JSON.stringify(SAVE))}catch(e){}}
+
+/* Migração única: o portão das passivas e os 3 espaços iniciais vieram depois.
+   Quem já tinha progresso não pode ser punido por uma mudança de regra. */
+if(!SAVE.mig1){
+  SAVE.mig1=true;
+  const d=SAVE.done||{}, t=SAVE.tot||{};
+  const veterano = SAVE.gold>0 || Object.keys(d).length>0;
+  // o quarto espaço era de graça; quem já jogava continua com ele
+  if(veterano) SAVE.up.slot=Math.min(3,(SAVE.up.slot||0)+1);
+  // devolve as passivas cujo feito a pessoa comprovadamente já fez
+  if(d.evo1)                          d.p_proj=true;
+  if(d.lvl15||d.lvl30)                d.p_vel=true;
+  if(d.win1||d.win2||d.win3||d.win4)  d.p_regen=true;
+  if((t.elites||0)>=15)               d.p_area=true;
+  if((t.pods||0)>=200)                d.p_exp=true;
+  SAVE.done=d;
+  save();
+}
 
 let CURE=false,CUR='?',P,G,ST,cdMul=1,manual=false,paused=false,lastFighter='kira',selMap='distrito',selDiff='normal';
 const keys={},mouse={x:0,y:0};

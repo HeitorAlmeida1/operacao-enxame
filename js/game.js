@@ -112,7 +112,7 @@ function updateWeapon(w,dt){CUR=w.id;CURE=w.evo;const d=WEAPONS[w.id];if(d.tick)
   w.cd-=dt;if(w.cd<=0){w.cd=d.cd(w)*cdMul;if(d.sig){P.atkT=0.14;sfx('shoot')}d.fire(w,0);if(P.fid==='lumen'&&d.proj&&Math.random()<0.33)d.fire(w,0.16)}}
 
 function update(dt){
-  G.t+=dt;P.buffs=P.buffs.filter(b=>(b.t-=dt)>0);ST=stats();P.lastMax=ST.maxHp;cdMul=100/(100+Math.max(-50,ST.haste));
+  G.t+=dt;if(G.t>=300)complete('p_regen');P.buffs=P.buffs.filter(b=>(b.t-=dt)>0);ST=stats();P.lastMax=ST.maxHp;cdMul=100/(100+Math.max(-50,ST.haste));
   let mx=(bind('right')?1:0)-(bind('left')?1:0),my=(bind('down')?1:0)-(bind('up')?1:0);if(PAD.mx||PAD.my){mx=PAD.mx;my=PAD.my}
   P.moving=!!(mx||my);
   if(P.dash){CUR='E';P.dash.t-=dt;P.x+=P.dash.vx*dt;P.y+=P.dash.vy*dt;for(const e of G.enemies){if(e.dead||P.dash.hit.has(e))continue;if(d2(e,P)<(e.r+30)**2){P.dash.hit.add(e);damage(e,P.dash.dmg)}}if(P.dash.t<=0)P.dash=null}
@@ -192,7 +192,7 @@ function update(dt){
   for(const c2 of G.cards)if(d2(c2,P)<36*36){c2.done=true;G.pendCard++;if(P.aug.colecionador)P.collected++}
   G.cards=G.cards.filter(c2=>!c2.done);
   for(const pd of G.pods)if(d2(pd,P)<34*34){pd.done=true;addTot('pods',1);fx(pd.x,pd.y,6,40,'#c9b8ff',0.3);const r=Math.random();
-    if(r<0.5)dropGold(pd.x,pd.y,5*ST.gold);else if(r<0.75)G.orbs.push({x:pd.x,y:pd.y,heal:true});else{for(const o of G.orbs)o.mag=true;banner('Ímã: tudo puxado!')}}
+    if(r<0.5)dropGold(pd.x,pd.y,5*ST.gold);else if(r<0.75)G.orbs.push({x:pd.x,y:pd.y,heal:true});else{for(const o of G.orbs)o.mag=true;addTot('imas',1);banner('Ímã: tudo puxado!')}}
   G.pods=G.pods.filter(p=>!p.done);
   G.enemies=G.enemies.filter(e=>!e.dead);
   mapUpdate(dt);tutUpdate();
@@ -229,23 +229,39 @@ function mapUpdate(dt){CUR='mapa';
     else b.charge=Math.max(0,b.charge-dt)}}
   else if(G.sea){const s=G.sea;s.t+=dt;s.x=Math.min(s.to,s.x+49*dt);if(P.x<s.x)takeDamage(40*diffMul().sp*dt)}
 }
-function addXp(v){P.xp+=v;while(P.xp>=P.xpNext){P.xp-=P.xpNext;P.lvl++;P.xpNext=xpNext(P.lvl);G.pendLv++;G.gold+=Math.round(10*ST.gold);
-  if(P.aug.festa)P.buffs.push({t:8,dmg:0.25,spd:0.3,haste:40});
-  if(P.lvl===3)banner('E liberado: '+P.f.E.n);if(P.lvl===6)banner('R liberado: '+P.f.R.n);if(P.lvl>=15)complete('lvl15');if(P.fid==='kira'&&P.lvl>=25)complete('kira25');if(P.fid==='kaze'&&P.lvl>=30)complete('kaze30');if(P.fid==='rivka'&&P.lvl>=35)complete('rivka35');if(P.lvl>=30)complete('lvl30');if(P.fid==='rhea'&&P.lvl>=25)complete('rhea25')}}
+const LVL_MAX=99;                      // mesmo teto do Swarm
+function addXp(v){
+  if(P.lvl>=LVL_MAX){P.xp=P.xpNext;return}
+  P.xp+=v;
+  while(P.xp>=P.xpNext&&P.lvl<LVL_MAX){P.xp-=P.xpNext;P.lvl++;P.xpNext=xpNext(P.lvl);G.pendLv++;G.gold+=Math.round(10*ST.gold);
+    if(P.aug.festa)P.buffs.push({t:8,dmg:0.25,spd:0.3,haste:40});
+    if(P.lvl===3)banner('E liberado: '+P.f.E.n);if(P.lvl===6)banner('R liberado: '+P.f.R.n);if(P.lvl===LVL_MAX)banner('Nível máximo!');
+    if(P.lvl>=10)complete('p_vel');
+    if(P.lvl>=15)complete('lvl15');if(P.lvl>=30)complete('lvl30');
+    if(P.fid==='kira'&&P.lvl>=25)complete('kira25');if(P.fid==='kaze'&&P.lvl>=30)complete('kaze30');
+    if(P.fid==='rivka'&&P.lvl>=35)complete('rivka35');if(P.fid==='rhea'&&P.lvl>=25)complete('rhea25');
+    if(P.fid==='tora'&&P.lvl>=25)complete('p_dur')}
+  if(P.lvl>=LVL_MAX)P.xp=P.xpNext}
 
 function useAbility(k){if(!G||G.state!=='play'||paused)return;
   CUR=k;CURE=false;if(k==='E'){if(P.lvl<3||P.eCd>0)return;sfx('ability');P.f.useE();P.eCd=P.f.E.cd*cdMul}
   else{if(P.lvl<6||P.rCd>0)return;sfx('ult');P.f.useR();P.rCd=P.f.R.cd*cdMul*(P.aug.ult?0.5:1)}}
 
 /* ---------- Escolhas ---------- */
-const slots=()=>4+(SAVE.up.slot||0);
+const slots=()=>3+(SAVE.up.slot||0);   // Swarm começa em 3 e vai até 6
+const pasUnlocked=id=>{const l=PASSIVES[id].lock;return !l||SAVE.done[l]};
 function wUnlocked(id){const l=WEAPONS[id].lock;return !l||SAVE.done[l]}
 function buildOptions(n){const o=[],extra=P.weapons.filter(w=>!WEAPONS[w.id].sig).length;
   for(const id in WEAPONS){const d=WEAPONS[id];if(d.sig&&d.sig!==P.fid)continue;const w=P.weapons.find(x=>x.id===id);
     if(w){if(w.lvl<5)o.push({type:'w',id,lvl:w.lvl+1})}else if(!d.sig&&extra<4&&wUnlocked(id))o.push({type:'w',id,lvl:1})}
   const pc=Object.keys(P.pas).length;
-  for(const id in PASSIVES){const l=P.pas[id]||0;if(l>0&&l<5)o.push({type:'p',id,lvl:l+1});else if(!l&&pc<slots())o.push({type:'p',id,lvl:1})}
-  const r=shuffle(o).slice(0,n);return r.length?r:[{type:'heal'},{type:'gold'}].slice(0,Math.max(1,n))}
+  for(const id in PASSIVES){const l=P.pas[id]||0;
+    if(l>0&&l<5)o.push({type:'p',id,lvl:l+1});
+    else if(!l&&pc<slots()&&pasUnlocked(id))o.push({type:'p',id,lvl:1})}
+  const r=shuffle(o).slice(0,n);
+  if(r.length)return r;
+  // build fechada: a partir daqui só vêm as duas cartas de bônus
+  return shuffle([{type:'heal'},{type:'gold'}]).slice(0,Math.max(1,Math.min(2,n)))}
 function eligible(){return P.weapons.filter(w=>w.lvl>=5&&!w.evo&&(P.pas[WEAPONS[w.id].evo]||0)>0)}
 
 function optCard(o,i){const b=document.createElement('button');b.className='card';let tag,nm,ds,hint='',c,ribbon='';
@@ -275,9 +291,11 @@ function openChoice(kind){G.state='choice';let title;
   setTimeout(()=>{const f=box.querySelector('button');if(f)f.focus()},50)}
 function pick(o){if(G.state!=='choice')return;
   if(o.type==='w'){const w=P.weapons.find(x=>x.id===o.id);if(w)w.lvl++;else P.weapons.push({id:o.id,lvl:1,evo:false,cd:0,st:{}});
-    if(o.id==='arco'&&o.lvl>=3)complete('arco3')}
+    if(o.id==='arco'&&o.lvl>=3)complete('arco3');
+    if(o.id==='bumerangue'&&o.lvl>=2)complete('p_acel');
+    if(o.id==='luva'&&o.lvl>=4)complete('p_crit')}
   else if(o.type==='p'){P.pas[o.id]=o.lvl;if(o.id==='vida')P.hp+=25}
-  else if(o.type==='evo'){P.weapons.find(x=>x.id===o.id).evo=true;banner(WEAPONS[o.id].n+' evoluiu: '+WEAPONS[o.id].evoN);fx(P.x,P.y,10,140,'#ffcc4d',0.7);complete('evo1');sfx('evolve');if(P.weapons.filter(w=>w.evo).length>=3)complete('evo3');if(P.weapons.filter(w=>w.evo).length>=4)complete('evo4')}
+  else if(o.type==='evo'){P.weapons.find(x=>x.id===o.id).evo=true;banner(WEAPONS[o.id].n+' evoluiu: '+WEAPONS[o.id].evoN);fx(P.x,P.y,10,140,'#ffcc4d',0.7);complete('evo1');complete('p_proj');sfx('evolve');if(P.weapons.filter(w=>w.evo).length>=3)complete('evo3');if(P.weapons.filter(w=>w.evo).length>=4)complete('evo4')}
   else if(o.type==='aug'){P.aug[o.id]=true;if(Object.keys(P.aug).length>=3)complete('aug3')}
   else if(o.type==='gold')G.gold+=25;
   else P.hp+=0.3*ST.maxHp;
